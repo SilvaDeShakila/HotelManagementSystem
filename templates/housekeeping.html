@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Housekeeping - HotelSuite</title>
+
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
+
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"
+        rel="stylesheet"
+    >
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/premium.css') }}"
+    >
+
+    <style>
+        .hk-hero {
+            background:
+                radial-gradient(circle at top right, rgba(201,162,39,.22), transparent 35%),
+                linear-gradient(135deg, #0b1120, #16213a);
+            border-radius: 20px;
+            padding: 30px;
+            color: #fff;
+            box-shadow: 0 18px 45px rgba(11,17,32,.16);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hk-hero::after {
+            content: "";
+            position: absolute;
+            width: 220px;
+            height: 220px;
+            right: -80px;
+            top: -100px;
+            border-radius: 50%;
+            border: 1px solid rgba(255,255,255,.08);
+        }
+
+        .hk-hero-label {
+            color: #e7cf73;
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 1.8px;
+        }
+
+        .hk-hero h1 {
+            font-weight: 850;
+            letter-spacing: -.7px;
+        }
+
+        .hk-stat {
+            border: 1px solid rgba(15,23,42,.06) !important;
+            background: rgba(255,255,255,.94) !important;
+            box-shadow: 0 10px 28px rgba(15,23,42,.055) !important;
+            border-radius: 16px !important;
+            transition: transform .25s ease, box-shadow .25s ease;
+        }
+
+        .hk-stat:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 18px 38px rgba(15,23,42,.09) !important;
+        }
+
+        .hk-stat-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .hk-room-card {
+            border: 1px solid rgba(15,23,42,.06) !important;
+            background: rgba(255,255,255,.96) !important;
+            border-radius: 18px !important;
+            box-shadow: 0 10px 30px rgba(15,23,42,.055) !important;
+            transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease;
+            overflow: hidden;
+        }
+
+        .hk-room-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 20px 45px rgba(15,23,42,.10) !important;
+            border-color: rgba(201,162,39,.25) !important;
+        }
+
+        .hk-room-top {
+            padding: 20px 20px 15px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .hk-room-number {
+            font-size: 21px;
+            font-weight: 850;
+            color: #0f172a;
+            letter-spacing: -.3px;
+        }
+
+        .hk-room-type {
+            font-size: 12px;
+            font-weight: 700;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: .8px;
+        }
+
+        .hk-room-body {
+            padding: 18px 20px 20px;
+        }
+
+        .hk-info-box {
+            background: #f8fafc;
+            border: 1px solid #eef2f7;
+            border-radius: 12px;
+            padding: 12px 14px;
+        }
+
+        .hk-info-label {
+            display: block;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 800;
+            color: #94a3b8;
+            margin-bottom: 3px;
+        }
+
+        .hk-info-value {
+            font-size: 14px;
+            font-weight: 750;
+            color: #0f172a;
+        }
+
+        .hk-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 7px 10px;
+            border-radius: 9px;
+            font-size: 11px;
+            font-weight: 800;
+        }
+
+        .hk-status-dirty {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+        .hk-status-cleaning {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .hk-status-clean {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+
+        .hk-status-inspected {
+            background: #dcfce7;
+            color: #15803d;
+        }
+
+        .hk-status-maintenance {
+            background: #e2e8f0;
+            color: #334155;
+        }
+
+        .hk-form-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 800;
+            color: #64748b;
+        }
+
+        .hk-select {
+            border-radius: 10px 0 0 10px !important;
+            border-color: #e2e8f0 !important;
+            font-weight: 600;
+        }
+
+        .hk-update-btn {
+            border-radius: 0 10px 10px 0 !important;
+            font-weight: 750;
+        }
+
+        .hk-empty {
+            border: 2px dashed #dbe2ea;
+            border-radius: 18px;
+            padding: 60px 20px;
+            background: rgba(255,255,255,.7);
+        }
+
+        .hk-section-title {
+            font-size: 18px;
+            font-weight: 850;
+            color: #0f172a;
+        }
+
+        @media (max-width: 767px) {
+            .hk-hero {
+                padding: 24px 20px;
+            }
+
+            .hk-hero h1 {
+                font-size: 25px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container-fluid">
+    <div class="row">
+
+        <!-- SIDEBAR -->
+        <aside class="col-md-3 col-lg-2 p-0 sidebar">
+
+            <div class="brand px-4 py-4">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-buildings-fill"></i>
+                    <span>HotelSuite</span>
+                </div>
+                <small>Management System</small>
+            </div>
+
+            <nav class="px-3">
+
+                <a href="{{ url_for('main.index') }}">
+                    <i class="bi bi-grid-1x2-fill"></i>
+                    Dashboard
+                </a>
+
+                <a href="{{ url_for('main.rooms') }}">
+                    <i class="bi bi-door-open-fill"></i>
+                    Rooms
+                </a>
+
+                <a href="{{ url_for('main.bookings') }}">
+                    <i class="bi bi-calendar2-check-fill"></i>
+                    Reservations
+                </a>
+
+                <a href="{{ url_for('main.guests') }}">
+                    <i class="bi bi-people-fill"></i>
+                    Guests
+                </a>
+
+                <a href="#">
+                    <i class="bi bi-credit-card-fill"></i>
+                    Payments
+                </a>
+
+                <a href="{{ url_for('main.housekeeping') }}" class="active">
+                    <i class="bi bi-stars"></i>
+                    Housekeeping
+                </a>
+
+                <a href="#">
+                    <i class="bi bi-person-badge-fill"></i>
+                    Staff
+                </a>
+
+                <a href="#">
+                    <i class="bi bi-bar-chart-fill"></i>
+                    Reports
+                </a>
+
+                <a href="#">
+                    <i class="bi bi-gear-fill"></i>
+                    Settings
+                </a>
+
+                <hr class="border-secondary opacity-25 my-3">
+
+                <a href="{{ url_for('auth.logout') }}">
+                    <i class="bi bi-box-arrow-right"></i>
+                    Logout
+                </a>
+
+            </nav>
+
+        </aside>
+
+
+        <!-- MAIN -->
+        <main class="col-md-9 col-lg-10 p-0 content">
+
+            <!-- TOPBAR -->
+            <div class="topbar px-4 px-lg-5 py-3">
+
+                <div>
+                    <h4 class="mb-0 fw-bold">
+                        Housekeeping
+                    </h4>
+
+                    <small class="text-muted">
+                        Room cleaning & operational control
+                    </small>
+                </div>
+
+                <div class="d-flex align-items-center gap-3">
+
+                    <div class="text-end d-none d-sm-block">
+                        <small class="d-block fw-bold">
+                            {{ current_user.name }}
+                        </small>
+                        <small class="text-muted">
+                            {{ current_user.role|title }}
+                        </small>
+                    </div>
+
+                    <div
+                        class="avatar"
+                        style="
+                            width:42px;
+                            height:42px;
+                            border-radius:50%;
+                            display:flex;
+                            align-items:center;
+                            justify-content:center;
+                            background:linear-gradient(135deg,#2563eb,#1d4ed8);
+                            color:#fff;
+                            font-weight:800;
+                        "
+                    >
+                        {{ current_user.name[0]|upper }}
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="p-4 p-lg-5">
+
+                <!-- HERO -->
+                <div class="hk-hero mb-4">
+
+                    <div class="position-relative" style="z-index:2;">
+
+                        <div class="hk-hero-label mb-2">
+                            OPERATIONS CENTER
+                        </div>
+
+                        <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
+
+                            <div>
+                                <h1 class="mb-2">
+                                    Housekeeping Management
+                                </h1>
+
+                                <p class="mb-0 text-white-50">
+                                    Track room cleanliness, inspections and maintenance in real time.
+                                </p>
+                            </div>
+
+                            <div
+                                class="px-3 py-2 rounded-3"
+                                style="
+                                    background:rgba(255,255,255,.08);
+                                    border:1px solid rgba(255,255,255,.10);
+                                "
+                            >
+                                <i class="bi bi-door-open me-2"></i>
+                                <strong>{{ rooms|length }}</strong> Rooms
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ category }} alert-dismissible fade show shadow-sm border-0">
+                                <i class="bi bi-info-circle me-2"></i>
+                                {{ message }}
+
+                                <button
+                                    type="button"
+                                    class="btn-close"
+                                    data-bs-dismiss="alert"
+                                ></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+
+
+                <!-- SUMMARY -->
+                {% set dirty_count = rooms|selectattr("housekeeping_status", "equalto", "dirty")|list|length %}
+                {% set cleaning_count = rooms|selectattr("housekeeping_status", "equalto", "cleaning")|list|length %}
+                {% set clean_count = rooms|selectattr("housekeeping_status", "equalto", "clean")|list|length %}
+                {% set inspected_count = rooms|selectattr("housekeeping_status", "equalto", "inspected")|list|length %}
+                {% set maintenance_count = rooms|selectattr("housekeeping_status", "equalto", "maintenance")|list|length %}
+
+                <div class="row g-3 mb-5">
+
+                    <div class="col-6 col-xl">
+                        <div class="card hk-stat h-100 border-0">
+                            <div class="card-body p-3">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <small class="text-muted fw-bold">TOTAL ROOMS</small>
+                                        <h3 class="fw-bold mb-0 mt-1">{{ rooms|length }}</h3>
+                                    </div>
+                                    <div class="hk-stat-icon bg-primary-subtle text-primary">
+                                        <i class="bi bi-door-open-fill"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-6 col-xl">
+                        <div class="card hk-stat h-100 border-0">
+                            <div class="card-body p-3">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <small class="text-muted fw-bold">DIRTY</small>
+                                        <h3 class="fw-bold mb-0 mt-1">{{ dirty_count }}</h3>
+                                    </div>
+                                    <div class="hk-stat-icon bg-danger-subtle text-danger">
+                                        <i class="bi bi-exclamation-circle-fill"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-6 col-xl">
+                        <div class="card hk-stat h-100 border-0">
+                            <div class="card-body p-3">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <small class="text-muted fw-bold">CLEANING</small>
+                                        <h3 class="fw-bold mb-0 mt-1">{{ cleaning_count }}</h3>
+                                    </div>
+                                    <div class="hk-stat-icon bg-warning-subtle text-warning-emphasis">
+                                        <i class="bi bi-brush-fill"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-6 col-xl">
+                        <div class="card hk-stat h-100 border-0">
+                            <div class="card-body p-3">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <small class="text-muted fw-bold">CLEAN</small>
+                                        <h3 class="fw-bold mb-0 mt-1">{{ clean_count }}</h3>
+                                    </div>
+                                    <div class="hk-stat-icon bg-info-subtle text-info">
+                                        <i class="bi bi-check-circle-fill"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-6 col-xl">
+                        <div class="card hk-stat h-100 border-0">
+                            <div class="card-body p-3">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <small class="text-muted fw-bold">INSPECTED</small>
+                                        <h3 class="fw-bold mb-0 mt-1">{{ inspected_count }}</h3>
+                                    </div>
+                                    <div class="hk-stat-icon bg-success-subtle text-success">
+                                        <i class="bi bi-shield-check"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-6 col-xl">
+                        <div class="card hk-stat h-100 border-0">
+                            <div class="card-body p-3">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <small class="text-muted fw-bold">MAINTENANCE</small>
+                                        <h3 class="fw-bold mb-0 mt-1">{{ maintenance_count }}</h3>
+                                    </div>
+                                    <div class="hk-stat-icon bg-dark-subtle text-dark">
+                                        <i class="bi bi-tools"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+
+                <!-- ROOM GRID -->
+                <div class="d-flex justify-content-between align-items-center mb-3">
+
+                    <div>
+                        <div class="hk-section-title">
+                            Room Operations
+                        </div>
+
+                        <small class="text-muted">
+                            Update housekeeping status for each room.
+                        </small>
+                    </div>
+
+                    <span class="badge rounded-pill bg-light text-dark border px-3 py-2">
+                        <i class="bi bi-clock-history me-1"></i>
+                        Live Status
+                    </span>
+
+                </div>
+
+
+                <div class="row g-4">
+
+                    {% for room in rooms %}
+
+                        <div class="col-md-6 col-xl-4">
+
+                            <div class="card hk-room-card h-100">
+
+                                <div class="hk-room-top">
+
+                                    <div class="d-flex justify-content-between align-items-start gap-2">
+
+                                        <div>
+                                            <div class="hk-room-number">
+                                                Room {{ room.room_number }}
+                                            </div>
+
+                                            <div class="hk-room-type mt-1">
+                                                {{ room.room_type }}
+                                            </div>
+                                        </div>
+
+
+                                        {% if room.status == "occupied" %}
+
+                                            <span class="hk-status" style="background:#fee2e2;color:#b91c1c;">
+                                                <i class="bi bi-person-fill"></i>
+                                                Occupied
+                                            </span>
+
+                                        {% elif room.status == "maintenance" %}
+
+                                            <span class="hk-status hk-status-maintenance">
+                                                <i class="bi bi-tools"></i>
+                                                Maintenance
+                                            </span>
+
+                                        {% elif room.status == "cleaning" %}
+
+                                            <span class="hk-status hk-status-cleaning">
+                                                <i class="bi bi-brush"></i>
+                                                Cleaning
+                                            </span>
+
+                                        {% else %}
+
+                                            <span class="hk-status hk-status-inspected">
+                                                <i class="bi bi-check-circle"></i>
+                                                Available
+                                            </span>
+
+                                        {% endif %}
+
+                                    </div>
+
+                                </div>
+
+
+                                <div class="hk-room-body">
+
+                                    <div class="row g-2 mb-3">
+
+                                        <div class="col-6">
+                                            <div class="hk-info-box">
+                                                <span class="hk-info-label">Floor</span>
+                                                <span class="hk-info-value">
+                                                    {{ room.floor }}
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-6">
+                                            <div class="hk-info-box">
+                                                <span class="hk-info-label">Room Status</span>
+                                                <span class="hk-info-value">
+                                                    {{ room.status|replace("-", " ")|title }}
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                    </div>
+
+
+                                    <div class="mb-3">
+
+                                        <span class="hk-info-label">
+                                            Housekeeping Status
+                                        </span>
+
+                                        {% if room.housekeeping_status == "dirty" %}
+
+                                            <span class="hk-status hk-status-dirty">
+                                                <i class="bi bi-exclamation-circle-fill"></i>
+                                                Dirty
+                                            </span>
+
+                                        {% elif room.housekeeping_status == "cleaning" %}
+
+                                            <span class="hk-status hk-status-cleaning">
+                                                <i class="bi bi-brush-fill"></i>
+                                                Cleaning
+                                            </span>
+
+                                        {% elif room.housekeeping_status == "clean" %}
+
+                                            <span class="hk-status hk-status-clean">
+                                                <i class="bi bi-check-circle-fill"></i>
+                                                Clean
+                                            </span>
+
+                                        {% elif room.housekeeping_status == "inspected" %}
+
+                                            <span class="hk-status hk-status-inspected">
+                                                <i class="bi bi-shield-check"></i>
+                                                Inspected
+                                            </span>
+
+                                        {% elif room.housekeeping_status == "maintenance" %}
+
+                                            <span class="hk-status hk-status-maintenance">
+                                                <i class="bi bi-tools"></i>
+                                                Maintenance
+                                            </span>
+
+                                        {% else %}
+
+                                            <span class="hk-status bg-secondary-subtle text-secondary">
+                                                {{ room.housekeeping_status|title }}
+                                            </span>
+
+                                        {% endif %}
+
+                                    </div>
+
+
+                                    <form
+                                        method="POST"
+                                        action="{{ url_for('main.update_housekeeping', room_id=room.id) }}"
+                                    >
+
+                                        <label class="hk-form-label mb-2">
+                                            Update Status
+                                        </label>
+
+                                        <div class="input-group">
+
+                                            <select
+                                                name="housekeeping_status"
+                                                class="form-select hk-select"
+                                            >
+
+                                                <option
+                                                    value="dirty"
+                                                    {% if room.housekeeping_status == "dirty" %}selected{% endif %}
+                                                >
+                                                    Dirty
+                                                </option>
+
+                                                <option
+                                                    value="cleaning"
+                                                    {% if room.housekeeping_status == "cleaning" %}selected{% endif %}
+                                                >
+                                                    Cleaning
+                                                </option>
+
+                                                <option
+                                                    value="clean"
+                                                    {% if room.housekeeping_status == "clean" %}selected{% endif %}
+                                                >
+                                                    Clean
+                                                </option>
+
+                                                <option
+                                                    value="inspected"
+                                                    {% if room.housekeeping_status == "inspected" %}selected{% endif %}
+                                                >
+                                                    Inspected
+                                                </option>
+
+                                                <option
+                                                    value="maintenance"
+                                                    {% if room.housekeeping_status == "maintenance" %}selected{% endif %}
+                                                >
+                                                    Maintenance
+                                                </option>
+
+                                            </select>
+
+                                            <button
+                                                type="submit"
+                                                class="btn btn-primary hk-update-btn"
+                                            >
+                                                <i class="bi bi-check-lg me-1"></i>
+                                                Update
+                                            </button>
+
+                                        </div>
+
+                                    </form>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    {% else %}
+
+                        <div class="col-12">
+
+                            <div class="hk-empty text-center">
+
+                                <i class="bi bi-door-open display-3 text-muted"></i>
+
+                                <h4 class="fw-bold mt-3">
+                                    No rooms found
+                                </h4>
+
+                                <p class="text-muted mb-4">
+                                    Add rooms before managing housekeeping.
+                                </p>
+
+                                <a
+                                    href="{{ url_for('main.add_room') }}"
+                                    class="btn btn-primary px-4"
+                                >
+                                    <i class="bi bi-plus-circle me-1"></i>
+                                    Add Room
+                                </a>
+
+                            </div>
+
+                        </div>
+
+                    {% endfor %}
+
+                </div>
+
+            </div>
+
+        </main>
+
+    </div>
+</div>
+
+
+<script
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+></script>
+
+</body>
+</html>

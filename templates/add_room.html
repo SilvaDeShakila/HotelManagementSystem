@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Add Room - HotelSuite</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/premium.css') }}">
+
+    <style>
+        .room-hero {
+            background:
+                radial-gradient(circle at top right, rgba(201,162,39,.22), transparent 35%),
+                linear-gradient(135deg, #0b1120, #16213a);
+            border-radius: 20px;
+            padding: 30px;
+            color: white;
+            box-shadow: 0 18px 45px rgba(11,17,32,.16);
+        }
+
+        .hero-label {
+            color: #e7cf73;
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 1.8px;
+        }
+
+        .room-form-card {
+            border: 1px solid rgba(15,23,42,.06) !important;
+            border-radius: 18px !important;
+            box-shadow: 0 12px 35px rgba(15,23,42,.06) !important;
+            background: rgba(255,255,255,.96) !important;
+        }
+
+        .form-section {
+            font-size: 15px;
+            font-weight: 850;
+            color: #0f172a;
+        }
+
+        .form-section i {
+            color: #2563eb;
+        }
+
+        .premium-input {
+            border-radius: 11px !important;
+            border-color: #e2e8f0 !important;
+            padding: 11px 13px !important;
+            font-weight: 500;
+        }
+
+        .premium-input:focus {
+            border-color: #2563eb !important;
+            box-shadow: 0 0 0 3px rgba(37,99,235,.10) !important;
+        }
+
+        .field-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 800;
+            color: #64748b;
+            margin-bottom: 7px;
+        }
+
+        .info-panel {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 14px;
+        }
+
+        .room-preview {
+            background: linear-gradient(135deg, #eff6ff, #f8fafc);
+            border: 1px solid #dbeafe;
+            border-radius: 14px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container-fluid">
+    <div class="row">
+
+        <!-- SIDEBAR -->
+        <aside class="col-md-3 col-lg-2 p-0 sidebar">
+
+            <div class="brand px-4 py-4">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-buildings-fill"></i>
+                    <span>HotelSuite</span>
+                </div>
+                <small>Management System</small>
+            </div>
+
+            <nav class="px-3">
+
+                <a href="{{ url_for('main.index') }}">
+                    <i class="bi bi-grid-1x2-fill"></i>
+                    Dashboard
+                </a>
+
+                <a href="{{ url_for('main.rooms') }}" class="active">
+                    <i class="bi bi-door-open-fill"></i>
+                    Rooms
+                </a>
+
+                <a href="{{ url_for('main.bookings') }}">
+                    <i class="bi bi-calendar2-check-fill"></i>
+                    Reservations
+                </a>
+
+                <a href="{{ url_for('main.guests') }}">
+                    <i class="bi bi-people-fill"></i>
+                    Guests
+                </a>
+
+                <a href="#">
+                    <i class="bi bi-credit-card-fill"></i>
+                    Payments
+                </a>
+
+                <a href="{{ url_for('main.housekeeping') }}">
+                    <i class="bi bi-stars"></i>
+                    Housekeeping
+                </a>
+
+                <a href="#">
+                    <i class="bi bi-person-badge-fill"></i>
+                    Staff
+                </a>
+
+                <a href="#">
+                    <i class="bi bi-bar-chart-fill"></i>
+                    Reports
+                </a>
+
+                <a href="#">
+                    <i class="bi bi-gear-fill"></i>
+                    Settings
+                </a>
+
+                <hr class="border-secondary opacity-25 my-3">
+
+                <a href="{{ url_for('auth.logout') }}">
+                    <i class="bi bi-box-arrow-right"></i>
+                    Logout
+                </a>
+
+            </nav>
+
+        </aside>
+
+
+        <!-- MAIN -->
+        <main class="col-md-9 col-lg-10 p-0 content">
+
+            <div class="topbar px-4 px-lg-5 py-3">
+
+                <div>
+                    <h4 class="mb-0 fw-bold">Add Room</h4>
+                    <small class="text-muted">Hotel inventory management</small>
+                </div>
+
+                <div class="d-flex align-items-center gap-3">
+
+                    <div class="text-end d-none d-sm-block">
+                        <small class="d-block fw-bold">{{ current_user.name }}</small>
+                        <small class="text-muted">{{ current_user.role|title }}</small>
+                    </div>
+
+                    <div
+                        class="avatar"
+                        style="
+                            width:42px;
+                            height:42px;
+                            border-radius:50%;
+                            display:flex;
+                            align-items:center;
+                            justify-content:center;
+                            background:linear-gradient(135deg,#2563eb,#1d4ed8);
+                            color:#fff;
+                            font-weight:800;
+                        "
+                    >
+                        {{ current_user.name[0]|upper }}
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="p-4 p-lg-5">
+
+                <div class="room-hero mb-4">
+
+                    <div class="hero-label mb-2">
+                        ROOM INVENTORY
+                    </div>
+
+                    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
+
+                        <div>
+                            <h1 class="fw-bold mb-2">
+                                Add New Room
+                            </h1>
+
+                            <p class="text-white-50 mb-0">
+                                Create a new room and add it to your hotel inventory.
+                            </p>
+                        </div>
+
+                        <a
+                            href="{{ url_for('main.rooms') }}"
+                            class="btn btn-light px-4"
+                        >
+                            <i class="bi bi-arrow-left me-1"></i>
+                            Back to Rooms
+                        </a>
+
+                    </div>
+
+                </div>
+
+
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ category }} alert-dismissible fade show shadow-sm border-0">
+                                <i class="bi bi-info-circle me-2"></i>
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+
+
+                <div class="row g-4">
+
+                    <div class="col-xl-8">
+
+                        <div class="card room-form-card border-0">
+
+                            <div class="card-body p-4 p-lg-5">
+
+                                <div class="form-section mb-4">
+                                    <i class="bi bi-door-open-fill me-2"></i>
+                                    Room Information
+                                </div>
+
+                                <form method="POST">
+
+                                    <div class="row g-4">
+
+                                        <div class="col-md-6">
+                                            <label class="field-label">Room Number *</label>
+
+                                            <input
+                                                type="text"
+                                                name="room_number"
+                                                class="form-control premium-input"
+                                                placeholder="Example: 101"
+                                                required
+                                            >
+                                        </div>
+
+
+                                        <div class="col-md-6">
+                                            <label class="field-label">Room Type *</label>
+
+                                            <select
+                                                name="room_type"
+                                                class="form-select premium-input"
+                                                required
+                                            >
+                                                <option value="">Select room type</option>
+                                                <option value="Single">Single</option>
+                                                <option value="Double">Double</option>
+                                                <option value="Twin">Twin</option>
+                                                <option value="Deluxe">Deluxe</option>
+                                                <option value="Suite">Suite</option>
+                                                <option value="Presidential">Presidential</option>
+                                            </select>
+                                        </div>
+
+
+                                        <div class="col-md-4">
+                                            <label class="field-label">Floor *</label>
+
+                                            <input
+                                                type="number"
+                                                name="floor"
+                                                class="form-control premium-input"
+                                                min="0"
+                                                placeholder="1"
+                                                required
+                                            >
+                                        </div>
+
+
+                                        <div class="col-md-4">
+                                            <label class="field-label">Price Per Night *</label>
+
+                                            <div class="input-group">
+                                                <span class="input-group-text bg-white border-end-0">Rs.</span>
+
+                                                <input
+                                                    type="number"
+                                                    name="price_per_night"
+                                                    id="priceInput"
+                                                    class="form-control premium-input border-start-0"
+                                                    min="0"
+                                                    step="0.01"
+                                                    placeholder="150.00"
+                                                    required
+                                                >
+                                            </div>
+                                        </div>
+
+
+                                        <div class="col-md-4">
+                                            <label class="field-label">Capacity</label>
+
+                                            <input
+                                                type="number"
+                                                name="capacity"
+                                                class="form-control premium-input"
+                                                min="1"
+                                                value="2"
+                                            >
+                                        </div>
+
+
+                                        <div class="col-md-6">
+                                            <label class="field-label">Room Status</label>
+
+                                            <select
+                                                name="status"
+                                                class="form-select premium-input"
+                                            >
+                                                <option value="available">Available</option>
+                                                <option value="occupied">Occupied</option>
+                                                <option value="cleaning">Cleaning</option>
+                                                <option value="maintenance">Maintenance</option>
+                                            </select>
+                                        </div>
+
+
+                                        <div class="col-12">
+                                            <label class="field-label">Description</label>
+
+                                            <textarea
+                                                name="description"
+                                                class="form-control premium-input"
+                                                rows="5"
+                                                placeholder="Room details, facilities, view, bed type, etc."
+                                            ></textarea>
+                                        </div>
+
+                                    </div>
+
+
+                                    <hr class="my-4">
+
+
+                                    <div class="d-flex justify-content-end gap-2">
+
+                                        <a
+                                            href="{{ url_for('main.rooms') }}"
+                                            class="btn btn-light border px-4"
+                                        >
+                                            Cancel
+                                        </a>
+
+                                        <button
+                                            type="submit"
+                                            class="btn btn-primary px-4"
+                                        >
+                                            <i class="bi bi-plus-circle me-1"></i>
+                                            Add Room
+                                        </button>
+
+                                    </div>
+
+                                </form>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="col-xl-4">
+
+                        <div class="room-preview p-4 mb-4">
+
+                            <div class="d-flex align-items-center gap-3 mb-3">
+
+                                <div
+                                    style="
+                                        width:48px;
+                                        height:48px;
+                                        border-radius:14px;
+                                        display:flex;
+                                        align-items:center;
+                                        justify-content:center;
+                                        background:#2563eb;
+                                        color:white;
+                                        font-size:20px;
+                                    "
+                                >
+                                    <i class="bi bi-stars"></i>
+                                </div>
+
+                                <div>
+                                    <h6 class="fw-bold mb-1">Room Setup</h6>
+                                    <small class="text-muted">
+                                        Inventory details
+                                    </small>
+                                </div>
+
+                            </div>
+
+                            <p class="text-muted small mb-0">
+                                Enter accurate room information so reservations,
+                                pricing and housekeeping operations can work correctly.
+                            </p>
+
+                        </div>
+
+
+                        <div class="info-panel p-4">
+
+                            <h6 class="fw-bold mb-3">
+                                <i class="bi bi-lightbulb text-warning me-2"></i>
+                                Quick Guide
+                            </h6>
+
+                            <div class="small text-muted">
+
+                                <div class="mb-3">
+                                    <strong class="text-dark">Room Number</strong><br>
+                                    Use a unique number such as 101 or 205.
+                                </div>
+
+                                <div class="mb-3">
+                                    <strong class="text-dark">Room Type</strong><br>
+                                    Select the correct category for reporting and pricing.
+                                </div>
+
+                                <div class="mb-3">
+                                    <strong class="text-dark">Capacity</strong><br>
+                                    Maximum number of guests allowed.
+                                </div>
+
+                                <div>
+                                    <strong class="text-dark">Price</strong><br>
+                                    Base nightly room rate.
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </main>
+
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>

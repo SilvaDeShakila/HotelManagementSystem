@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Guests - HotelSuite</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/premium.css') }}">
+
+    <style>
+        .guest-hero {
+            background:
+                radial-gradient(circle at top right, rgba(201,162,39,.22), transparent 35%),
+                linear-gradient(135deg, #0b1120, #16213a);
+            border-radius: 20px;
+            padding: 30px;
+            color: #fff;
+            box-shadow: 0 18px 45px rgba(11,17,32,.16);
+        }
+
+        .hero-label {
+            color: #e7cf73;
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 1.8px;
+        }
+
+        .guest-stat {
+            border: 1px solid rgba(15,23,42,.06) !important;
+            background: rgba(255,255,255,.94) !important;
+            box-shadow: 0 10px 28px rgba(15,23,42,.055) !important;
+            border-radius: 16px !important;
+            transition: transform .25s ease, box-shadow .25s ease;
+        }
+
+        .guest-stat:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 18px 38px rgba(15,23,42,.09) !important;
+        }
+
+        .guest-stat-icon {
+            width: 46px;
+            height: 46px;
+            border-radius: 13px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 21px;
+        }
+
+        .guest-table-card {
+            border: 1px solid rgba(15,23,42,.06) !important;
+            border-radius: 18px !important;
+            box-shadow: 0 12px 35px rgba(15,23,42,.06) !important;
+            overflow: hidden;
+        }
+
+        .guest-table-card .card-header {
+            background: rgba(255,255,255,.95) !important;
+            border-bottom: 1px solid #eef2f7 !important;
+        }
+
+        .guest-table thead th {
+            padding: 14px 20px;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 800;
+            color: #64748b;
+            background: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+            white-space: nowrap;
+        }
+
+        .guest-table tbody td {
+            padding: 17px 20px;
+            border-color: #f1f5f9;
+            vertical-align: middle;
+        }
+
+        .guest-table tbody tr {
+            transition: background .2s ease;
+        }
+
+        .guest-table tbody tr:hover {
+            background: #f8fafc;
+        }
+
+        .guest-avatar {
+            width: 42px;
+            height: 42px;
+            min-width: 42px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #dbeafe, #eff6ff);
+            color: #2563eb;
+            font-weight: 850;
+            box-shadow: 0 6px 15px rgba(37,99,235,.10);
+        }
+
+        .guest-name {
+            font-weight: 800;
+            color: #0f172a;
+        }
+
+        .guest-email {
+            color: #64748b;
+            font-size: 13px;
+        }
+
+        .role-badge {
+            padding: 7px 10px;
+            border-radius: 8px;
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+        }
+
+        .booking-count {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 34px;
+            height: 30px;
+            padding: 0 9px;
+            border-radius: 9px;
+            background: #eff6ff;
+            color: #2563eb;
+            font-weight: 800;
+        }
+
+        .guest-action {
+            border-radius: 9px;
+            font-weight: 700;
+        }
+
+        .empty-guests {
+            padding: 65px 20px;
+        }
+
+        .search-box {
+            max-width: 300px;
+        }
+
+        @media (max-width: 767px) {
+            .guest-hero {
+                padding: 24px 20px;
+            }
+
+            .guest-hero h1 {
+                font-size: 25px;
+            }
+
+            .search-box {
+                max-width: none;
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container-fluid">
+    <div class="row">
+
+        <!-- SIDEBAR -->
+        <aside class="col-md-3 col-lg-2 p-0 sidebar">
+
+            <div class="brand px-4 py-4">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-buildings-fill"></i>
+                    <span>HotelSuite</span>
+                </div>
+                <small>Management System</small>
+            </div>
+
+            <nav class="px-3">
+
+                <a href="{{ url_for('main.index') }}">
+                    <i class="bi bi-grid-1x2-fill"></i>
+                    Dashboard
+                </a>
+
+                <a href="{{ url_for('main.rooms') }}">
+                    <i class="bi bi-door-open-fill"></i>
+                    Rooms
+                </a>
+
+                <a href="{{ url_for('main.bookings') }}">
+                    <i class="bi bi-calendar2-check-fill"></i>
+                    Reservations
+                </a>
+
+                <a href="{{ url_for('main.guests') }}" class="active">
+                    <i class="bi bi-people-fill"></i>
+                    Guests
+                </a>
+
+                <a href="#">
+                    <i class="bi bi-credit-card-fill"></i>
+                    Payments
+                </a>
+
+                <a href="{{ url_for('main.housekeeping') }}">
+                    <i class="bi bi-stars"></i>
+                    Housekeeping
+                </a>
+
+                <a href="#">
+                    <i class="bi bi-person-badge-fill"></i>
+                    Staff
+                </a>
+
+                <a href="#">
+                    <i class="bi bi-bar-chart-fill"></i>
+                    Reports
+                </a>
+
+                <a href="#">
+                    <i class="bi bi-gear-fill"></i>
+                    Settings
+                </a>
+
+                <hr class="border-secondary opacity-25 my-3">
+
+                <a href="{{ url_for('auth.logout') }}">
+                    <i class="bi bi-box-arrow-right"></i>
+                    Logout
+                </a>
+
+            </nav>
+
+        </aside>
+
+
+        <!-- MAIN -->
+        <main class="col-md-9 col-lg-10 p-0 content">
+
+            <!-- TOPBAR -->
+            <div class="topbar px-4 px-lg-5 py-3">
+
+                <div>
+                    <h4 class="mb-0 fw-bold">
+                        Guests
+                    </h4>
+
+                    <small class="text-muted">
+                        Customer relationship management
+                    </small>
+                </div>
+
+                <div class="d-flex align-items-center gap-3">
+
+                    <div class="text-end d-none d-sm-block">
+                        <small class="d-block fw-bold">
+                            {{ current_user.name }}
+                        </small>
+
+                        <small class="text-muted">
+                            {{ current_user.role|title }}
+                        </small>
+                    </div>
+
+                    <div
+                        class="avatar"
+                        style="
+                            width:42px;
+                            height:42px;
+                            border-radius:50%;
+                            display:flex;
+                            align-items:center;
+                            justify-content:center;
+                            background:linear-gradient(135deg,#2563eb,#1d4ed8);
+                            color:#fff;
+                            font-weight:800;
+                        "
+                    >
+                        {{ current_user.name[0]|upper }}
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="p-4 p-lg-5">
+
+                <!-- HERO -->
+                <div class="guest-hero mb-4">
+
+                    <div class="hero-label mb-2">
+                        CUSTOMER MANAGEMENT
+                    </div>
+
+                    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
+
+                        <div>
+                            <h1 class="fw-bold mb-2">
+                                Guest Management
+                            </h1>
+
+                            <p class="text-white-50 mb-0">
+                                Manage registered customers and their reservation activity.
+                            </p>
+                        </div>
+
+                        <a
+                            href="{{ url_for('auth.register') }}"
+                            class="btn btn-light px-4"
+                        >
+                            <i class="bi bi-person-plus-fill me-1"></i>
+                            Add Guest
+                        </a>
+
+                    </div>
+
+                </div>
+
+
+                <!-- FLASH -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ category }} alert-dismissible fade show shadow-sm border-0">
+                                <i class="bi bi-info-circle me-2"></i>
+                                {{ message }}
+                                <button
+                                    type="button"
+                                    class="btn-close"
+                                    data-bs-dismiss="alert"
+                                ></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+
+
+                <!-- STAT -->
+                <div class="row g-3 mb-5">
+
+                    <div class="col-sm-6 col-xl-3">
+
+                        <div class="card guest-stat h-100 border-0">
+
+                            <div class="card-body p-3">
+
+                                <div class="d-flex justify-content-between align-items-center">
+
+                                    <div>
+                                        <small class="text-muted fw-bold">
+                                            TOTAL GUESTS
+                                        </small>
+
+                                        <h2 class="fw-bold mb-0 mt-1">
+                                            {{ guests|length }}
+                                        </h2>
+                                    </div>
+
+                                    <div class="guest-stat-icon bg-primary-subtle text-primary">
+                                        <i class="bi bi-people-fill"></i>
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="col-sm-6 col-xl-3">
+
+                        <div class="card guest-stat h-100 border-0">
+
+                            <div class="card-body p-3">
+
+                                <div class="d-flex justify-content-between align-items-center">
+
+                                    <div>
+                                        <small class="text-muted fw-bold">
+                                            ACTIVE CUSTOMERS
+                                        </small>
+
+                                        <h2 class="fw-bold mb-0 mt-1">
+                                            {{ guests|length }}
+                                        </h2>
+                                    </div>
+
+                                    <div class="guest-stat-icon bg-success-subtle text-success">
+                                        <i class="bi bi-person-check-fill"></i>
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="col-sm-6 col-xl-3">
+
+                        <div class="card guest-stat h-100 border-0">
+
+                            <div class="card-body p-3">
+
+                                <div class="d-flex justify-content-between align-items-center">
+
+                                    <div>
+                                        <small class="text-muted fw-bold">
+                                            REGISTERED ACCOUNTS
+                                        </small>
+
+                                        <h2 class="fw-bold mb-0 mt-1">
+                                            {{ guests|length }}
+                                        </h2>
+                                    </div>
+
+                                    <div class="guest-stat-icon bg-info-subtle text-info">
+                                        <i class="bi bi-person-vcard-fill"></i>
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="col-sm-6 col-xl-3">
+
+                        <div class="card guest-stat h-100 border-0">
+
+                            <div class="card-body p-3">
+
+                                <div class="d-flex justify-content-between align-items-center">
+
+                                    <div>
+                                        <small class="text-muted fw-bold">
+                                            CUSTOMER PORTAL
+                                        </small>
+
+                                        <h2 class="fw-bold mb-0 mt-1">
+                                            <i class="bi bi-check-circle-fill text-success fs-4"></i>
+                                        </h2>
+                                    </div>
+
+                                    <div class="guest-stat-icon bg-warning-subtle text-warning-emphasis">
+                                        <i class="bi bi-shield-check"></i>
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- TABLE -->
+                <div class="card guest-table-card border-0">
+
+                    <div class="card-header p-4">
+
+                        <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
+
+                            <div>
+                                <h5 class="fw-bold mb-1">
+                                    Registered Guests
+                                </h5>
+
+                                <small class="text-muted">
+                                    Customer accounts registered in the system
+                                </small>
+                            </div>
+
+                            <div class="input-group search-box">
+
+                                <span class="input-group-text bg-white border-end-0">
+                                    <i class="bi bi-search text-muted"></i>
+                                </span>
+
+                                <input
+                                    type="text"
+                                    id="guestSearch"
+                                    class="form-control border-start-0"
+                                    placeholder="Search guests..."
+                                >
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="table-responsive">
+
+                        <table class="table guest-table align-middle mb-0">
+
+                            <thead>
+
+                                <tr>
+                                    <th>Guest</th>
+                                    <th>Email</th>
+                                    <th>Role</th>
+                                    <th>Bookings</th>
+                                    <th class="text-end">Action</th>
+                                </tr>
+
+                            </thead>
+
+
+                            <tbody id="guestTableBody">
+
+                            {% for guest in guests %}
+
+                                <tr class="guest-row">
+
+                                    <td>
+
+                                        <div class="d-flex align-items-center gap-3">
+
+                                            <div class="guest-avatar">
+                                                {{ guest.name[0]|upper }}
+                                            </div>
+
+                                            <div>
+
+                                                <div class="guest-name">
+                                                    {{ guest.name }}
+                                                </div>
+
+                                                <small class="text-muted">
+                                                    Customer account
+                                                </small>
+
+                                            </div>
+
+                                        </div>
+
+                                    </td>
+
+
+                                    <td>
+                                        <span class="guest-email">
+                                            {{ guest.email }}
+                                        </span>
+                                    </td>
+
+
+                                    <td>
+
+                                        <span class="role-badge bg-primary-subtle text-primary">
+                                            <i class="bi bi-person-fill me-1"></i>
+                                            {{ guest.role|capitalize }}
+                                        </span>
+
+                                    </td>
+
+
+                                    <td>
+
+                                        <span class="booking-count">
+                                            {{ guest.bookings|length }}
+                                        </span>
+
+                                    </td>
+
+
+                                    <td class="text-end">
+
+                                        <a
+                                            href="{{ url_for('main.bookings') }}"
+                                            class="btn btn-sm btn-outline-primary guest-action"
+                                        >
+                                            <i class="bi bi-calendar2-check me-1"></i>
+                                            Bookings
+                                        </a>
+
+                                    </td>
+
+                                </tr>
+
+                            {% else %}
+
+                                <tr>
+
+                                    <td colspan="5">
+
+                                        <div class="text-center empty-guests">
+
+                                            <i class="bi bi-people display-4 text-muted"></i>
+
+                                            <h5 class="fw-bold mt-3">
+                                                No guests registered
+                                            </h5>
+
+                                            <p class="text-muted mb-4">
+                                                Add your first customer account to get started.
+                                            </p>
+
+                                            <a
+                                                href="{{ url_for('auth.register') }}"
+                                                class="btn btn-primary px-4"
+                                            >
+                                                <i class="bi bi-person-plus me-1"></i>
+                                                Add Guest
+                                            </a>
+
+                                        </div>
+
+                                    </td>
+
+                                </tr>
+
+                            {% endfor %}
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </main>
+
+    </div>
+</div>
+
+
+<script>
+    const searchInput = document.getElementById("guestSearch");
+
+    if (searchInput) {
+        searchInput.addEventListener("input", function () {
+
+            const query = this.value.toLowerCase().trim();
+
+            document.querySelectorAll(".guest-row").forEach(row => {
+
+                const text = row.textContent.toLowerCase();
+
+                row.style.display = text.includes(query) ? "" : "none";
+
+            });
+
+        });
+    }
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>

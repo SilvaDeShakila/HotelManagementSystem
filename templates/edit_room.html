@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Edit Room - HotelSuite</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/premium.css') }}">
+
+    <style>
+        .room-hero {
+            background:
+                radial-gradient(circle at top right, rgba(201,162,39,.22), transparent 35%),
+                linear-gradient(135deg, #0b1120, #16213a);
+            border-radius: 20px;
+            padding: 30px;
+            color: white;
+            box-shadow: 0 18px 45px rgba(11,17,32,.16);
+        }
+
+        .hero-label {
+            color: #e7cf73;
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 1.8px;
+        }
+
+        .room-form-card {
+            border: 1px solid rgba(15,23,42,.06) !important;
+            border-radius: 18px !important;
+            box-shadow: 0 12px 35px rgba(15,23,42,.06) !important;
+            background: rgba(255,255,255,.96) !important;
+        }
+
+        .form-section {
+            font-size: 15px;
+            font-weight: 850;
+            color: #0f172a;
+        }
+
+        .form-section i {
+            color: #2563eb;
+        }
+
+        .premium-input {
+            border-radius: 11px !important;
+            border-color: #e2e8f0 !important;
+            padding: 11px 13px !important;
+            font-weight: 500;
+        }
+
+        .premium-input:focus {
+            border-color: #2563eb !important;
+            box-shadow: 0 0 0 3px rgba(37,99,235,.10) !important;
+        }
+
+        .field-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 800;
+            color: #64748b;
+            margin-bottom: 7px;
+        }
+
+        .info-panel {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 14px;
+        }
+
+        .room-summary {
+            background: linear-gradient(135deg, #eff6ff, #f8fafc);
+            border: 1px solid #dbeafe;
+            border-radius: 14px;
+        }
+
+        .room-id {
+            font-size: 27px;
+            font-weight: 850;
+            color: #0f172a;
+        }
+
+        .status-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 7px 11px;
+            border-radius: 9px;
+            font-size: 11px;
+            font-weight: 800;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container-fluid">
+    <div class="row">
+
+        <!-- SIDEBAR -->
+        <aside class="col-md-3 col-lg-2 p-0 sidebar">
+
+            <div class="brand px-4 py-4">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-buildings-fill"></i>
+                    <span>HotelSuite</span>
+                </div>
+                <small>Management System</small>
+            </div>
+
+            <nav class="px-3">
+
+                <a href="{{ url_for('main.index') }}">
+                    <i class="bi bi-grid-1x2-fill"></i>
+                    Dashboard
+                </a>
+
+                <a href="{{ url_for('main.rooms') }}" class="active">
+                    <i class="bi bi-door-open-fill"></i>
+                    Rooms
+                </a>
+
+                <a href="{{ url_for('main.bookings') }}">
+                    <i class="bi bi-calendar2-check-fill"></i>
+                    Reservations
+                </a>
+
+                <a href="{{ url_for('main.guests') }}">
+                    <i class="bi bi-people-fill"></i>
+                    Guests
+                </a>
+
+                <a href="#">
+                    <i class="bi bi-credit-card-fill"></i>
+                    Payments
+                </a>
+
+                <a href="{{ url_for('main.housekeeping') }}">
+                    <i class="bi bi-stars"></i>
+                    Housekeeping
+                </a>
+
+                <a href="#">
+                    <i class="bi bi-person-badge-fill"></i>
+                    Staff
+                </a>
+
+                <a href="#">
+                    <i class="bi bi-bar-chart-fill"></i>
+                    Reports
+                </a>
+
+                <a href="#">
+                    <i class="bi bi-gear-fill"></i>
+                    Settings
+                </a>
+
+                <hr class="border-secondary opacity-25 my-3">
+
+                <a href="{{ url_for('auth.logout') }}">
+                    <i class="bi bi-box-arrow-right"></i>
+                    Logout
+                </a>
+
+            </nav>
+
+        </aside>
+
+
+        <!-- MAIN -->
+        <main class="col-md-9 col-lg-10 p-0 content">
+
+            <div class="topbar px-4 px-lg-5 py-3">
+
+                <div>
+                    <h4 class="mb-0 fw-bold">Edit Room</h4>
+                    <small class="text-muted">Update hotel inventory</small>
+                </div>
+
+                <div class="d-flex align-items-center gap-3">
+
+                    <div class="text-end d-none d-sm-block">
+                        <small class="d-block fw-bold">{{ current_user.name }}</small>
+                        <small class="text-muted">{{ current_user.role|title }}</small>
+                    </div>
+
+                    <div
+                        class="avatar"
+                        style="
+                            width:42px;
+                            height:42px;
+                            border-radius:50%;
+                            display:flex;
+                            align-items:center;
+                            justify-content:center;
+                            background:linear-gradient(135deg,#2563eb,#1d4ed8);
+                            color:#fff;
+                            font-weight:800;
+                        "
+                    >
+                        {{ current_user.name[0]|upper }}
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="p-4 p-lg-5">
+
+                <!-- HERO -->
+                <div class="room-hero mb-4">
+
+                    <div class="hero-label mb-2">
+                        ROOM INVENTORY
+                    </div>
+
+                    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
+
+                        <div>
+                            <h1 class="fw-bold mb-2">
+                                Edit Room {{ room.room_number }}
+                            </h1>
+
+                            <p class="text-white-50 mb-0">
+                                Update room details, pricing and operational status.
+                            </p>
+                        </div>
+
+                        <a
+                            href="{{ url_for('main.rooms') }}"
+                            class="btn btn-light px-4"
+                        >
+                            <i class="bi bi-arrow-left me-1"></i>
+                            Back to Rooms
+                        </a>
+
+                    </div>
+
+                </div>
+
+
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ category }} alert-dismissible fade show shadow-sm border-0">
+                                <i class="bi bi-info-circle me-2"></i>
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+
+
+                <div class="row g-4">
+
+                    <div class="col-xl-8">
+
+                        <div class="card room-form-card border-0">
+
+                            <div class="card-body p-4 p-lg-5">
+
+                                <div class="form-section mb-4">
+                                    <i class="bi bi-pencil-square me-2"></i>
+                                    Room Information
+                                </div>
+
+                                <form method="POST">
+
+                                    <div class="row g-4">
+
+                                        <div class="col-md-6">
+                                            <label class="field-label">
+                                                Room Number *
+                                            </label>
+
+                                            <input
+                                                type="text"
+                                                name="room_number"
+                                                class="form-control premium-input"
+                                                value="{{ room.room_number }}"
+                                                required
+                                            >
+                                        </div>
+
+
+                                        <div class="col-md-6">
+                                            <label class="field-label">
+                                                Room Type *
+                                            </label>
+
+                                            <select
+                                                name="room_type"
+                                                class="form-select premium-input"
+                                                required
+                                            >
+
+                                                <option value="Single" {% if room.room_type == "Single" %}selected{% endif %}>
+                                                    Single
+                                                </option>
+
+                                                <option value="Double" {% if room.room_type == "Double" %}selected{% endif %}>
+                                                    Double
+                                                </option>
+
+                                                <option value="Twin" {% if room.room_type == "Twin" %}selected{% endif %}>
+                                                    Twin
+                                                </option>
+
+                                                <option value="Deluxe" {% if room.room_type == "Deluxe" %}selected{% endif %}>
+                                                    Deluxe
+                                                </option>
+
+                                                <option value="Suite" {% if room.room_type == "Suite" %}selected{% endif %}>
+                                                    Suite
+                                                </option>
+
+                                                <option value="Presidential" {% if room.room_type == "Presidential" %}selected{% endif %}>
+                                                    Presidential
+                                                </option>
+
+                                            </select>
+                                        </div>
+
+
+                                        <div class="col-md-4">
+                                            <label class="field-label">
+                                                Floor *
+                                            </label>
+
+                                            <input
+                                                type="number"
+                                                name="floor"
+                                                class="form-control premium-input"
+                                                value="{{ room.floor }}"
+                                                min="0"
+                                                required
+                                            >
+                                        </div>
+
+
+                                        <div class="col-md-4">
+                                            <label class="field-label">
+                                                Price Per Night *
+                                            </label>
+
+                                            <div class="input-group">
+
+                                                <span class="input-group-text bg-white border-end-0">
+                                                    Rs.
+                                                </span>
+
+                                                <input
+                                                    type="number"
+                                                    name="price_per_night"
+                                                    class="form-control premium-input border-start-0"
+                                                    value="{{ room.price_per_night }}"
+                                                    min="0"
+                                                    step="0.01"
+                                                    required
+                                                >
+
+                                            </div>
+                                        </div>
+
+
+                                        <div class="col-md-4">
+                                            <label class="field-label">
+                                                Capacity *
+                                            </label>
+
+                                            <input
+                                                type="number"
+                                                name="capacity"
+                                                class="form-control premium-input"
+                                                value="{{ room.capacity }}"
+                                                min="1"
+                                                required
+                                            >
+                                        </div>
+
+
+                                        <div class="col-md-6">
+                                            <label class="field-label">
+                                                Room Status
+                                            </label>
+
+                                            <select
+                                                name="status"
+                                                class="form-select premium-input"
+                                            >
+
+                                                <option value="available" {% if room.status == "available" %}selected{% endif %}>
+                                                    Available
+                                                </option>
+
+                                                <option value="occupied" {% if room.status == "occupied" %}selected{% endif %}>
+                                                    Occupied
+                                                </option>
+
+                                                <option value="cleaning" {% if room.status == "cleaning" %}selected{% endif %}>
+                                                    Cleaning
+                                                </option>
+
+                                                <option value="maintenance" {% if room.status == "maintenance" %}selected{% endif %}>
+                                                    Maintenance
+                                                </option>
+
+                                            </select>
+                                        </div>
+
+
+                                        <div class="col-md-6">
+                                            <label class="field-label">
+                                                Description
+                                            </label>
+
+                                            <textarea
+                                                name="description"
+                                                class="form-control premium-input"
+                                                rows="3"
+                                                placeholder="Room description..."
+                                            >{{ room.description or "" }}</textarea>
+                                        </div>
+
+                                    </div>
+
+
+                                    <hr class="my-4">
+
+
+                                    <div class="d-flex justify-content-end gap-2">
+
+                                        <a
+                                            href="{{ url_for('main.rooms') }}"
+                                            class="btn btn-light border px-4"
+                                        >
+                                            Cancel
+                                        </a>
+
+                                        <button
+                                            type="submit"
+                                            class="btn btn-primary px-4"
+                                        >
+                                            <i class="bi bi-check-circle me-1"></i>
+                                            Update Room
+                                        </button>
+
+                                    </div>
+
+                                </form>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- SIDE INFO -->
+                    <div class="col-xl-4">
+
+                        <div class="room-summary p-4 mb-4">
+
+                            <div class="d-flex justify-content-between align-items-start">
+
+                                <div>
+
+                                    <small class="text-muted fw-bold">
+                                        ROOM
+                                    </small>
+
+                                    <div class="room-id">
+                                        {{ room.room_number }}
+                                    </div>
+
+                                    <div class="text-muted">
+                                        {{ room.room_type }}
+                                    </div>
+
+                                </div>
+
+                                {% if room.status == "available" %}
+
+                                    <span class="status-chip bg-success-subtle text-success">
+                                        <i class="bi bi-check-circle-fill"></i>
+                                        Available
+                                    </span>
+
+                                {% elif room.status == "occupied" %}
+
+                                    <span class="status-chip bg-danger-subtle text-danger">
+                                        <i class="bi bi-person-fill"></i>
+                                        Occupied
+                                    </span>
+
+                                {% elif room.status == "cleaning" %}
+
+                                    <span class="status-chip bg-warning-subtle text-warning-emphasis">
+                                        <i class="bi bi-brush-fill"></i>
+                                        Cleaning
+                                    </span>
+
+                                {% else %}
+
+                                    <span class="status-chip bg-dark-subtle text-dark">
+                                        <i class="bi bi-tools"></i>
+                                        Maintenance
+                                    </span>
+
+                                {% endif %}
+
+                            </div>
+
+                            <hr>
+
+                            <div class="row g-3">
+
+                                <div class="col-6">
+                                    <small class="text-muted d-block">Floor</small>
+                                    <strong>{{ room.floor }}</strong>
+                                </div>
+
+                                <div class="col-6">
+                                    <small class="text-muted d-block">Capacity</small>
+                                    <strong>{{ room.capacity }} Guests</strong>
+                                </div>
+
+                                <div class="col-12">
+                                    <small class="text-muted d-block">Nightly Rate</small>
+                                    <strong>Rs. {{ "%.2f"|format(room.price_per_night) }}</strong>
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="info-panel p-4">
+
+                            <h6 class="fw-bold mb-3">
+                                <i class="bi bi-info-circle text-primary me-2"></i>
+                                Update Guidelines
+                            </h6>
+
+                            <div class="small text-muted">
+
+                                <div class="mb-3">
+                                    <strong class="text-dark">Pricing</strong><br>
+                                    Changes affect future booking calculations.
+                                </div>
+
+                                <div class="mb-3">
+                                    <strong class="text-dark">Capacity</strong><br>
+                                    Keep the maximum guest capacity accurate.
+                                </div>
+
+                                <div class="mb-3">
+                                    <strong class="text-dark">Status</strong><br>
+                                    Reflect the room's current operational condition.
+                                </div>
+
+                                <div>
+                                    <strong class="text-dark">Description</strong><br>
+                                    Keep facilities and room details up to date.
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </main>
+
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>
