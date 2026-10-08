@@ -1,476 +1,370 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+{% extends "base.html" %}
 
-    <title>Rooms - HotelPro</title>
+{% block title %}Rooms | HotelPro{% endblock %}
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/premium.css') }}">
+{% block content %}
 
-    <style>
-        .page-hero {
-            background:
-                radial-gradient(circle at 90% 20%, rgba(201,162,39,.18), transparent 30%),
-                linear-gradient(135deg, #0b1120, #172033);
-            color: white;
-            border-radius: 22px;
-            padding: 28px;
-            box-shadow: 0 18px 45px rgba(11,17,32,.15);
-        }
+<div class="page-header d-flex flex-wrap justify-content-between align-items-end gap-3">
 
-        .page-hero h2 {
-            font-weight: 800;
-        }
+    <div>
+        <div class="text-uppercase small fw-bold"
+             style="color: var(--lux-gold); letter-spacing: .12em;">
+            HOTEL INVENTORY
+        </div>
 
-        .room-table-card {
-            border: 1px solid rgba(15,23,42,.06) !important;
-            border-radius: 18px !important;
-            overflow: hidden;
-            box-shadow: 0 12px 35px rgba(15,23,42,.06) !important;
-        }
+        <h1 class="mt-2 mb-1">
+            Room Management
+        </h1>
 
-        .room-table thead th {
-            padding: 15px 18px;
-            background: #f8fafc;
-            border-bottom: 1px solid #e2e8f0;
-            color: #64748b;
-            font-size: 10px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            font-weight: 800;
-            white-space: nowrap;
-        }
+        <p>
+            Manage rooms, availability, pricing and operational status.
+        </p>
+    </div>
 
-        .room-table tbody td {
-            padding: 17px 18px;
-            border-color: #f1f5f9;
-        }
+    {% if current_user.role in ['admin', 'staff'] %}
+        <a href="{{ url_for('main.add_room') }}"
+           class="btn btn-warning px-4">
 
-        .room-table tbody tr {
-            transition: background .2s ease;
-        }
+            <i class="bi bi-plus-lg me-2"></i>
+            Add Room
 
-        .room-table tbody tr:hover {
-            background: #f8fafc;
-        }
+        </a>
+    {% endif %}
 
-        .room-number {
-            width: 42px;
-            height: 42px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: linear-gradient(135deg, #dbeafe, #eff6ff);
-            color: #2563eb;
-            font-weight: 800;
-        }
+</div>
 
-        .room-type {
-            font-weight: 700;
-            color: #334155;
-        }
 
-        .room-price {
-            font-weight: 800;
-            color: #0f172a;
-        }
+<!-- ROOM SUMMARY -->
 
-        .room-badge {
-            padding: 7px 11px;
-            border-radius: 8px;
-            font-size: 11px;
-            font-weight: 700;
-        }
+<div class="row mb-4">
 
-        .room-actions .btn {
-            width: 34px;
-            height: 34px;
-            border-radius: 9px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-        }
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body d-flex align-items-center gap-3">
 
-        .empty-state {
-            padding: 70px 20px;
-        }
-
-        .empty-state-icon {
-            width: 80px;
-            height: 80px;
-            margin: auto;
-            border-radius: 22px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: #eff6ff;
-            color: #2563eb;
-            font-size: 34px;
-        }
-    </style>
-</head>
-
-<body>
-
-<div class="container-fluid">
-    <div class="row">
-
-        <aside class="col-md-3 col-lg-2 p-0 sidebar">
-
-            <div class="brand">
-                <i class="bi bi-buildings-fill"></i>
-                HotelPro
-            </div>
-
-            <nav>
-
-                <a href="{{ url_for('main.index') }}">
-                    <i class="bi bi-grid-1x2-fill me-2"></i>
-                    Dashboard
-                </a>
-
-                <a href="{{ url_for('main.rooms') }}" class="active">
-                    <i class="bi bi-door-open-fill me-2"></i>
-                    Rooms
-                </a>
-
-                <a href="{{ url_for('main.bookings') }}">
-                    <i class="bi bi-calendar2-check-fill me-2"></i>
-                    Reservations
-                </a>
-
-                <a href="{{ url_for('main.guests') }}">
-                    <i class="bi bi-people-fill me-2"></i>
-                    Guests
-                </a>
-
-                <a href="#">
-                    <i class="bi bi-credit-card-fill me-2"></i>
-                    Payments
-                </a>
-
-                <a href="{{ url_for('main.housekeeping') }}">
-                    <i class="bi bi-stars me-2"></i>
-                    Housekeeping
-                </a>
-
-                <a href="#">
-                    <i class="bi bi-person-badge-fill me-2"></i>
-                    Staff
-                </a>
-
-                <a href="#">
-                    <i class="bi bi-bar-chart-fill me-2"></i>
-                    Reports
-                </a>
-
-                <a href="#">
-                    <i class="bi bi-sliders2 me-2"></i>
-                    Settings
-                </a>
-
-                <hr class="border-secondary mx-3">
-
-                <a href="{{ url_for('auth.logout') }}">
-                    <i class="bi bi-box-arrow-right me-2"></i>
-                    Logout
-                </a>
-
-            </nav>
-
-        </aside>
-
-        <main class="col-md-9 col-lg-10 p-0 content">
-
-            <div class="topbar px-4 py-3 d-flex justify-content-between align-items-center">
+                <div class="stat-icon">
+                    <i class="bi bi-door-open-fill"></i>
+                </div>
 
                 <div>
-                    <h4 class="mb-0">Rooms</h4>
-                    <small class="text-muted">
-                        Manage rooms, availability and pricing
-                    </small>
-                </div>
+                    <div class="text-muted small">
+                        Total Rooms
+                    </div>
 
-                <div class="text-end">
-                    <strong>{{ current_user.name }}</strong>
-                    <br>
-                    <small class="text-muted">
-                        {{ current_user.role|capitalize }}
-                    </small>
+                    <div class="fs-4 fw-bold">
+                        {{ rooms|length }}
+                    </div>
                 </div>
 
             </div>
+        </div>
+    </div>
 
-            <div class="p-4">
 
-                <div class="page-hero mb-4">
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body d-flex align-items-center gap-3">
 
-                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
-
-                        <div>
-                            <div class="hero-label mb-2">
-                                HOTEL INVENTORY
-                            </div>
-
-                            <h2 class="mb-2">
-                                Room Management
-                            </h2>
-
-                            <div class="text-white-50">
-                                Manage your hotel's rooms and operational status.
-                            </div>
-                        </div>
-
-                        <a
-                            href="{{ url_for('main.add_room') }}"
-                            class="btn btn-light fw-bold px-4 py-2"
-                        >
-                            <i class="bi bi-plus-lg me-1"></i>
-                            Add Room
-                        </a>
-
-                    </div>
-
+                <div class="stat-icon">
+                    <i class="bi bi-check-circle-fill"></i>
                 </div>
 
-                {% with messages = get_flashed_messages(with_categories=true) %}
+                <div>
+                    <div class="text-muted small">
+                        Available
+                    </div>
 
-                    {% if messages %}
+                    <div class="fs-4 fw-bold">
+                        {{ rooms|selectattr('status', 'equalto', 'available')|list|length }}
+                    </div>
+                </div>
 
-                        {% for category, message in messages %}
+            </div>
+        </div>
+    </div>
 
-                            <div class="alert alert-{{ category }} alert-dismissible fade show shadow-sm">
 
-                                {{ message }}
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body d-flex align-items-center gap-3">
 
-                                <button
-                                    type="button"
-                                    class="btn-close"
-                                    data-bs-dismiss="alert"
-                                ></button>
+                <div class="stat-icon">
+                    <i class="bi bi-person-fill"></i>
+                </div>
 
+                <div>
+                    <div class="text-muted small">
+                        Occupied
+                    </div>
+
+                    <div class="fs-4 fw-bold">
+                        {{ rooms|selectattr('status', 'equalto', 'occupied')|list|length }}
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+<!-- ROOM TABLE -->
+
+<div class="card room-table-card">
+
+    <div class="card-header py-3 px-4">
+
+        <div class="d-flex justify-content-between align-items-center">
+
+            <div>
+                <div class="fw-bold">
+                    Hotel Rooms
+                </div>
+
+                <small class="text-muted">
+                    Current room inventory
+                </small>
+            </div>
+
+            <span class="badge"
+                  style="background: rgba(212,175,55,.10); color: var(--lux-gold-light);">
+                {{ rooms|length }} Rooms
+            </span>
+
+        </div>
+
+    </div>
+
+
+    {% if rooms %}
+
+    <div class="table-responsive">
+
+        <table class="table room-table align-middle">
+
+            <thead>
+                <tr>
+                    <th>Room</th>
+                    <th>Type</th>
+                    <th>Floor</th>
+                    <th>Capacity</th>
+                    <th>Price / Night</th>
+                    <th>Status</th>
+                    <th>Description</th>
+
+                    {% if current_user.role in ['admin', 'staff'] %}
+                        <th class="text-end">Actions</th>
+                    {% endif %}
+                </tr>
+            </thead>
+
+
+            <tbody>
+
+            {% for room in rooms %}
+
+                <tr>
+
+                    <!-- ROOM -->
+
+                    <td>
+
+                        <div class="d-flex align-items-center gap-3">
+
+                            <div class="room-number">
+                                {{ room.room_number }}
                             </div>
 
-                        {% endfor %}
+                            <div>
 
-                    {% endif %}
+                                <div class="fw-bold">
+                                    Room {{ room.room_number }}
+                                </div>
 
-                {% endwith %}
+                                <small class="text-muted">
+                                    Room ID #{{ room.id }}
+                                </small>
 
-                <div class="card room-table-card border-0">
-
-                    {% if rooms %}
-
-                        <div class="table-responsive">
-
-                            <table class="table room-table align-middle mb-0">
-
-                                <thead>
-                                    <tr>
-                                        <th>Room</th>
-                                        <th>Type</th>
-                                        <th>Floor</th>
-                                        <th>Capacity</th>
-                                        <th>Price / Night</th>
-                                        <th>Status</th>
-                                        <th>Description</th>
-                                        <th class="text-center">Actions</th>
-                                    </tr>
-                                </thead>
-
-                                <tbody>
-
-                                {% for room in rooms %}
-
-                                    <tr>
-
-                                        <td>
-                                            <div class="d-flex align-items-center gap-3">
-
-                                                <div class="room-number">
-                                                    <i class="bi bi-door-open-fill"></i>
-                                                </div>
-
-                                                <div>
-                                                    <strong>
-                                                        {{ room.room_number }}
-                                                    </strong>
-
-                                                    <div class="small text-muted">
-                                                        Room ID #{{ room.id }}
-                                                    </div>
-                                                </div>
-
-                                            </div>
-                                        </td>
-
-                                        <td>
-                                            <span class="room-type">
-                                                {{ room.room_type }}
-                                            </span>
-                                        </td>
-
-                                        <td>
-                                            <span class="text-muted">
-                                                Floor {{ room.floor }}
-                                            </span>
-                                        </td>
-
-                                        <td>
-                                            <i class="bi bi-people text-muted me-1"></i>
-                                            {{ room.capacity }}
-                                        </td>
-
-                                        <td>
-                                            <span class="room-price">
-                                                ${{ "%.2f"|format(room.price_per_night) }}
-                                            </span>
-                                            <small class="text-muted">/ night</small>
-                                        </td>
-
-                                        <td>
-
-                                            {% if room.status == "available" %}
-
-                                                <span class="badge bg-success-subtle text-success room-badge">
-                                                    <i class="bi bi-check-circle me-1"></i>
-                                                    Available
-                                                </span>
-
-                                            {% elif room.status == "occupied" %}
-
-                                                <span class="badge bg-primary-subtle text-primary room-badge">
-                                                    <i class="bi bi-person-fill me-1"></i>
-                                                    Occupied
-                                                </span>
-
-                                            {% elif room.status == "cleaning" %}
-
-                                                <span class="badge bg-warning-subtle text-warning room-badge">
-                                                    <i class="bi bi-stars me-1"></i>
-                                                    Cleaning
-                                                </span>
-
-                                            {% elif room.status == "maintenance" %}
-
-                                                <span class="badge bg-danger-subtle text-danger room-badge">
-                                                    <i class="bi bi-tools me-1"></i>
-                                                    Maintenance
-                                                </span>
-
-                                            {% else %}
-
-                                                <span class="badge bg-secondary-subtle text-secondary room-badge">
-                                                    {{ room.status|capitalize }}
-                                                </span>
-
-                                            {% endif %}
-
-                                        </td>
-
-                                        <td>
-
-                                            {% if room.description %}
-
-                                                <span class="text-muted">
-                                                    {{ room.description|truncate(45) }}
-                                                </span>
-
-                                            {% else %}
-
-                                                <span class="text-muted fst-italic">
-                                                    No description
-                                                </span>
-
-                                            {% endif %}
-
-                                        </td>
-
-                                        <td class="text-center">
-
-                                            <div class="room-actions d-flex justify-content-center gap-2">
-
-                                                <a
-                                                    href="{{ url_for('main.edit_room', room_id=room.id) }}"
-                                                    class="btn btn-sm btn-outline-primary"
-                                                    title="Edit Room"
-                                                >
-                                                    <i class="bi bi-pencil"></i>
-                                                </a>
-
-                                                <form
-                                                    method="POST"
-                                                    action="{{ url_for('main.delete_room', room_id=room.id) }}"
-                                                    onsubmit="return confirm('Are you sure you want to delete room {{ room.room_number }}?');"
-                                                    class="d-inline"
-                                                >
-
-                                                    <button
-                                                        type="submit"
-                                                        class="btn btn-sm btn-outline-danger"
-                                                        title="Delete Room"
-                                                    >
-                                                        <i class="bi bi-trash"></i>
-                                                    </button>
-
-                                                </form>
-
-                                            </div>
-
-                                        </td>
-
-                                    </tr>
-
-                                {% endfor %}
-
-                                </tbody>
-
-                            </table>
+                            </div>
 
                         </div>
 
-                    {% else %}
+                    </td>
 
-                        <div class="empty-state text-center">
 
-                            <div class="empty-state-icon">
-                                <i class="bi bi-door-open"></i>
-                            </div>
+                    <!-- TYPE -->
 
-                            <h4 class="mt-4 fw-bold">
-                                No Rooms Found
-                            </h4>
+                    <td>
+                        <span class="fw-semibold">
+                            {{ room.room_type }}
+                        </span>
+                    </td>
 
-                            <p class="text-muted">
-                                Start by adding your first hotel room.
-                            </p>
 
-                            <a
-                                href="{{ url_for('main.add_room') }}"
-                                class="btn btn-primary px-4"
-                            >
-                                <i class="bi bi-plus-lg me-1"></i>
-                                Add First Room
+                    <!-- FLOOR -->
+
+                    <td>
+                        Floor {{ room.floor }}
+                    </td>
+
+
+                    <!-- CAPACITY -->
+
+                    <td>
+                        <i class="bi bi-people me-1 text-muted"></i>
+                        {{ room.capacity }}
+                    </td>
+
+
+                    <!-- PRICE -->
+
+                    <td>
+
+                        <span class="fw-bold">
+                            Rs. {{ "%.2f"|format(room.price_per_night) }}
+                        </span>
+
+                        <small class="text-muted">
+                            / night
+                        </small>
+
+                    </td>
+
+
+                    <!-- STATUS -->
+
+                    <td>
+
+                        {% if room.status == 'available' %}
+
+                            <span class="badge"
+                                  style="background: rgba(101,211,145,.12); color: #65d391;">
+                                Available
+                            </span>
+
+                        {% elif room.status == 'occupied' %}
+
+                            <span class="badge"
+                                  style="background: rgba(239,68,68,.12); color: #ff7777;">
+                                Occupied
+                            </span>
+
+                        {% elif room.status == 'cleaning' %}
+
+                            <span class="badge"
+                                  style="background: rgba(240,212,119,.12); color: #f0d477;">
+                                Cleaning
+                            </span>
+
+                        {% elif room.status == 'maintenance' %}
+
+                            <span class="badge"
+                                  style="background: rgba(126,219,232,.12); color: #7edbe8;">
+                                Maintenance
+                            </span>
+
+                        {% else %}
+
+                            <span class="badge bg-secondary">
+                                {{ room.status|title }}
+                            </span>
+
+                        {% endif %}
+
+                    </td>
+
+
+                    <!-- DESCRIPTION -->
+
+                    <td>
+
+                        {% if room.description %}
+
+                            <span class="text-muted">
+                                {{ room.description }}
+                            </span>
+
+                        {% else %}
+
+                            <span class="text-muted">
+                                —
+                            </span>
+
+                        {% endif %}
+
+                    </td>
+
+
+                    <!-- ACTIONS -->
+
+                    {% if current_user.role in ['admin', 'staff'] %}
+
+                    <td class="text-end">
+
+                        <div class="d-inline-flex gap-2">
+
+                            <a href="{{ url_for('main.edit_room', room_id=room.id) }}"
+                               class="btn btn-sm btn-secondary">
+
+                                <i class="bi bi-pencil"></i>
+
+                            </a>
+
+                            <a href="{{ url_for('main.delete_room', room_id=room.id) }}"
+                               class="btn btn-sm btn-danger"
+                               onclick="return confirm('Are you sure you want to delete this room?');">
+
+                                <i class="bi bi-trash"></i>
+
                             </a>
 
                         </div>
 
+                    </td>
+
                     {% endif %}
 
-                </div>
+                </tr>
 
-            </div>
+            {% endfor %}
 
-        </main>
+            </tbody>
+
+        </table>
 
     </div>
+
+    {% else %}
+
+        <div class="empty-state">
+
+            <i class="bi bi-door-open"></i>
+
+            <h4>
+                No Rooms Found
+            </h4>
+
+            <p>
+                There are currently no rooms in the hotel inventory.
+            </p>
+
+            {% if current_user.role in ['admin', 'staff'] %}
+
+                <a href="{{ url_for('main.add_room') }}"
+                   class="btn btn-warning mt-2">
+
+                    <i class="bi bi-plus-lg me-2"></i>
+                    Add First Room
+
+                </a>
+
+            {% endif %}
+
+        </div>
+
+    {% endif %}
+
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
-</body>
-</html>
+{% endblock %}

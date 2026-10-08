@@ -1,1303 +1,622 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+{% extends "base.html" %}
 
-    <title>Payments | HotelSuite</title>
+{% block title %}Payments | HotelPro{% endblock %}
 
-    <link
-        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-        rel="stylesheet"
-    >
+{% block content %}
 
-    <link
-        rel="stylesheet"
-        href="{{ url_for('static', filename='css/premium.css') }}"
-    >
+<!-- PAGE HEADER -->
+<div class="page-header d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4">
 
-    <style>
-        /* =========================================
-           PREMIUM PAYMENTS PAGE
-        ========================================= */
-
-        .payments-page {
-            display: flex !important;
-            flex-direction: row !important;
-            min-height: 100vh;
-            width: 100%;
-        }
-
-        .payments-page .sidebar {
-            flex: 0 0 260px !important;
-            width: 260px !important;
-            min-width: 260px !important;
-        }
-
-        .payments-page .main-content {
-            flex: 1 1 auto !important;
-            width: auto !important;
-            min-width: 0 !important;
-            margin: 0 !important;
-            padding: 28px 32px !important;
-            overflow-x: hidden;
-        }
-
-        /* TOPBAR */
-
-        .payments-page .topbar {
-            margin-bottom: 24px;
-        }
-
-        /* HERO */
-
-        .payment-hero {
-            position: relative;
-            overflow: hidden;
-
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 24px;
-
-            padding: 34px 36px;
-            margin-bottom: 24px;
-
-            border-radius: 20px;
-
-            background:
-                radial-gradient(
-                    circle at 85% 20%,
-                    rgba(201, 162, 39, .20),
-                    transparent 30%
-                ),
-                linear-gradient(
-                    135deg,
-                    #0b1120 0%,
-                    #111827 55%,
-                    #172033 100%
-                );
-
-            color: white;
-
-            box-shadow:
-                0 18px 45px rgba(15, 23, 42, .16);
-        }
-
-        .payment-hero::after {
-            content: "";
-
-            position: absolute;
-
-            width: 230px;
-            height: 230px;
-
-            right: -100px;
-            bottom: -130px;
-
-            border-radius: 50%;
-
-            border: 1px solid rgba(231, 207, 115, .25);
-        }
-
-        .payment-hero-content {
-            position: relative;
-            z-index: 2;
-        }
-
-        .payment-kicker {
-            display: inline-block;
-
-            margin-bottom: 7px;
-
-            color: #e7cf73;
-
-            font-size: 10px;
-            font-weight: 800;
-            letter-spacing: 1.8px;
-        }
-
-        .payment-hero h1 {
-            margin: 0 0 8px;
-
-            font-size: 32px;
-            font-weight: 850;
-            letter-spacing: -.5px;
-        }
-
-        .payment-hero p {
-            margin: 0;
-
-            color: rgba(255,255,255,.68);
-            font-size: 14px;
-        }
-
-        .payment-hero-actions {
-            position: relative;
-            z-index: 2;
-
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .payment-hero-icon {
-            width: 68px;
-            height: 68px;
-
-            display: grid;
-            place-items: center;
-
-            border-radius: 20px;
-
-            background: rgba(255,255,255,.08);
-            border: 1px solid rgba(231,207,115,.25);
-
-            color: #e7cf73;
-
-            font-size: 29px;
-
-            box-shadow:
-                inset 0 1px 0 rgba(255,255,255,.08),
-                0 12px 30px rgba(0,0,0,.15);
-        }
-
-        /* STAT CARDS */
-
-        .payment-stats {
-            display: grid;
-
-            grid-template-columns:
-                repeat(3, minmax(0, 1fr));
-
-            gap: 18px;
-
-            margin-bottom: 24px;
-        }
-
-        .payment-stat-card {
-            position: relative;
-
-            display: flex;
-            align-items: center;
-
-            gap: 16px;
-
-            min-width: 0;
-
-            padding: 22px;
-
-            background: rgba(255,255,255,.96);
-
-            border: 1px solid rgba(15,23,42,.06);
-            border-radius: 17px;
-
-            box-shadow:
-                0 10px 30px rgba(15,23,42,.055);
-
-            transition: .25s ease;
-        }
-
-        .payment-stat-card:hover {
-            transform: translateY(-4px);
-
-            box-shadow:
-                0 18px 40px rgba(15,23,42,.09);
-        }
-
-        .payment-stat-icon {
-            flex: 0 0 46px;
-
-            width: 46px;
-            height: 46px;
-
-            display: grid;
-            place-items: center;
-
-            border-radius: 14px;
-
-            background:
-                linear-gradient(
-                    135deg,
-                    #0f172a,
-                    #1e293b
-                );
-
-            color: #e7cf73;
-
-            font-size: 17px;
-            font-weight: 800;
-        }
-
-        .payment-stat-label {
-            font-size: 10px;
-            font-weight: 800;
-
-            letter-spacing: 1.1px;
-            text-transform: uppercase;
-
-            color: #64748b;
-        }
-
-        .payment-stat-value {
-            margin-top: 4px;
-
-            color: #0f172a;
-
-            font-size: 23px;
-            font-weight: 850;
-
-            white-space: nowrap;
-        }
-
-        .payment-stat-card small {
-            display: block;
-
-            margin-top: 3px;
-
-            color: #94a3b8;
-
-            font-size: 11px;
-        }
-
-        /* TABLE CARD */
-
-        .payment-card {
-            overflow: hidden;
-
-            background: rgba(255,255,255,.96);
-
-            border: 1px solid rgba(15,23,42,.06);
-            border-radius: 18px;
-
-            box-shadow:
-                0 12px 35px rgba(15,23,42,.06);
-        }
-
-        .payment-card-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-
-            gap: 20px;
-
-            padding: 25px 26px;
-
-            border-bottom: 1px solid #eef2f7;
-        }
-
-        .payment-card-kicker {
-            display: block;
-
-            margin-bottom: 5px;
-
-            color: #c9a227;
-
-            font-size: 10px;
-            font-weight: 800;
-
-            letter-spacing: 1.5px;
-        }
-
-        .payment-card-header h3 {
-            margin: 0 0 5px;
-
-            color: #0f172a;
-
-            font-size: 19px;
-            font-weight: 800;
-        }
-
-        .payment-card-header p {
-            margin: 0;
-
-            color: #94a3b8;
-
-            font-size: 13px;
-        }
-
-        /* TABLE */
-
-        .payment-table {
-            margin: 0 !important;
-        }
-
-        .payment-table thead th {
-            padding: 14px 20px;
-
-            background: #f8fafc;
-
-            color: #64748b;
-
-            font-size: 10px;
-            font-weight: 800;
-
-            letter-spacing: 1px;
-            text-transform: uppercase;
-
-            border-bottom: 1px solid #e2e8f0;
-
-            white-space: nowrap;
-        }
-
-        .payment-table tbody td {
-            padding: 17px 20px;
-
-            vertical-align: middle;
-
-            border-color: #f1f5f9;
-
-            color: #475569;
-
-            font-size: 13px;
-        }
-
-        .payment-table tbody tr {
-            transition: .2s ease;
-        }
-
-        .payment-table tbody tr:hover {
-            background: #fbfcfe;
-        }
-
-        /* PAYMENT REFERENCE */
-
-        .payment-reference {
-            display: inline-flex;
-            align-items: center;
-
-            gap: 9px;
-
-            color: #0f172a;
-
-            font-weight: 800;
-
-            text-decoration: none;
-        }
-
-        .payment-reference:hover {
-            color: #c9a227;
-        }
-
-        .payment-reference-icon {
-            width: 32px;
-            height: 32px;
-
-            display: grid;
-            place-items: center;
-
-            border-radius: 9px;
-
-            background: #f8fafc;
-
-            color: #c9a227;
-
-            font-size: 13px;
-        }
-
-        /* INVOICE */
-
-        .invoice-reference {
-            color: #2563eb;
-
-            font-weight: 750;
-
-            text-decoration: none;
-        }
-
-        .invoice-reference:hover {
-            color: #1d4ed8;
-
-            text-decoration: underline;
-        }
-
-        /* GUEST */
-
-        .guest-cell {
-            display: flex;
-            align-items: center;
-
-            gap: 10px;
-        }
-
-        .table-avatar {
-            flex: 0 0 36px;
-
-            width: 36px;
-            height: 36px;
-
-            display: grid;
-            place-items: center;
-
-            border-radius: 11px;
-
-            background: #eff6ff;
-
-            color: #2563eb;
-
-            font-weight: 800;
-        }
-
-        .guest-cell strong {
-            display: block;
-
-            color: #0f172a;
-
-            font-weight: 750;
-        }
-
-        .guest-cell small {
-            display: block;
-
-            margin-top: 2px;
-
-            color: #94a3b8;
-
-            font-size: 11px;
-        }
-
-        /* METHOD */
-
-        .method-badge {
-            display: inline-flex;
-
-            padding: 7px 10px;
-
-            border-radius: 9px;
-
-            background: #f1f5f9;
-
-            color: #475569;
-
-            font-size: 10px;
-            font-weight: 800;
-
-            letter-spacing: .2px;
-        }
-
-        /* AMOUNT */
-
-        .payment-amount {
-            color: #0f172a;
-
-            font-size: 13px;
-            font-weight: 800;
-
-            white-space: nowrap;
-        }
-
-        /* STATUS */
-
-        .payment-status {
-            display: inline-flex;
-            align-items: center;
-
-            gap: 6px;
-
-            padding: 7px 11px;
-
-            border-radius: 9px;
-
-            font-size: 10px;
-            font-weight: 800;
-
-            letter-spacing: .3px;
-        }
-
-        .payment-status::before {
-            content: "";
-
-            width: 6px;
-            height: 6px;
-
-            border-radius: 50%;
-
-            background: currentColor;
-        }
-
-        .payment-status.completed {
-            background: #dcfce7;
-            color: #15803d;
-        }
-
-        .payment-status.pending {
-            background: #fef3c7;
-            color: #b45309;
-        }
-
-        .payment-status.refunded {
-            background: #fee2e2;
-            color: #b91c1c;
-        }
-
-        .payment-status.other {
-            background: #f1f5f9;
-            color: #475569;
-        }
-
-        .payment-date {
-            color: #64748b;
-
-            font-size: 12px;
-
-            white-space: nowrap;
-        }
-
-        /* EMPTY STATE */
-
-        .payment-empty {
-            padding: 75px 24px;
-
-            text-align: center;
-        }
-
-        .payment-empty-icon {
-            width: 68px;
-            height: 68px;
-
-            display: grid;
-            place-items: center;
-
-            margin: 0 auto 17px;
-
-            border-radius: 19px;
-
-            background:
-                linear-gradient(
-                    135deg,
-                    #f8fafc,
-                    #eef2f7
-                );
-
-            color: #c9a227;
-
-            font-size: 27px;
-            font-weight: 800;
-        }
-
-        .payment-empty h4 {
-            margin: 0 0 7px;
-
-            color: #0f172a;
-
-            font-weight: 800;
-        }
-
-        .payment-empty p {
-            max-width: 440px;
-
-            margin: 0 auto 20px;
-
-            color: #94a3b8;
-
-            font-size: 13px;
-        }
-
-        /* RESPONSIVE */
-
-        @media (max-width: 1100px) {
-
-            .payment-stats {
-                grid-template-columns:
-                    repeat(2, minmax(0, 1fr));
-            }
-
-        }
-
-        @media (max-width: 900px) {
-
-            .payments-page {
-                display: block !important;
-            }
-
-            .payments-page .sidebar {
-                width: 100% !important;
-
-                min-width: 0 !important;
-                max-width: none !important;
-            }
-
-            .payments-page .main-content {
-                width: 100% !important;
-
-                padding: 22px !important;
-            }
-
-            .payment-hero {
-                padding: 28px;
-            }
-
-            .payment-card-header {
-                align-items: flex-start;
-
-                flex-direction: column;
-            }
-
-        }
-
-        @media (max-width: 600px) {
-
-            .payments-page .main-content {
-                padding: 18px !important;
-            }
-
-            .payment-stats {
-                grid-template-columns: 1fr;
-            }
-
-            .payment-hero {
-                padding: 24px;
-            }
-
-            .payment-hero h1 {
-                font-size: 27px;
-            }
-
-            .payment-hero-icon {
-                display: none;
-            }
-
-            .payment-card-header {
-                padding: 21px;
-            }
-
-            .payment-table thead th,
-            .payment-table tbody td {
-                padding-left: 14px;
-                padding-right: 14px;
-            }
-
-        }
-    </style>
-</head>
-
-<body>
-
-<div class="app-shell payments-page">
-
-    <!-- SIDEBAR -->
-
-    <aside class="sidebar">
-
-        <div class="brand">
-
-            <div class="brand-mark">
-                H
-            </div>
-
-            <div>
-
-                <div class="brand-name">
-                    HotelSuite
-                </div>
-
-                <div class="brand-subtitle">
-                    Management System
-                </div>
-
-            </div>
-
+    <div>
+        <div class="text-uppercase small fw-bold"
+             style="color:var(--lux-gold); letter-spacing:.12em;">
+            FINANCIAL OPERATIONS
         </div>
 
-
-        <nav>
-
-            <a href="{{ url_for('main.index') }}">
-                <span>▣</span>
-                Dashboard
-            </a>
-
-            <a href="{{ url_for('main.rooms') }}">
-                <span>▤</span>
-                Rooms
-            </a>
-
-            <a href="{{ url_for('main.bookings') }}">
-                <span>▣</span>
-                Bookings
-            </a>
-
-            <a href="{{ url_for('main.guests') }}">
-                <span>♙</span>
-                Guests
-            </a>
-
-            <a href="{{ url_for('main.housekeeping') }}">
-                <span>♧</span>
-                Housekeeping
-            </a>
-
-            <hr>
-
-            <a
-                href="{{ url_for('main.payments') }}"
-                class="active"
-            >
-                <span>◉</span>
-                Payments
-            </a>
-
-            <a href="{{ url_for('main.invoices') }}">
-                <span>▧</span>
-                Invoices
-            </a>
-
-        </nav>
-
-
-        <div class="sidebar-bottom">
-
-            <div class="sidebar-user">
-
-                <div class="avatar">
-                    {{ current_user.name[0]|upper }}
-                </div>
-
-                <div>
-
-                    <strong>
-                        {{ current_user.name }}
-                    </strong>
-
-                    <small>
-                        {{ current_user.role|capitalize }}
-                    </small>
-
-                </div>
-
-            </div>
-
-
-            <a
-                href="{{ url_for('auth.logout') }}"
-                class="logout-link"
-            >
-                Logout
-            </a>
-
-        </div>
-
-    </aside>
-
-
-    <!-- MAIN CONTENT -->
-
-    <main class="main-content">
-
-        <!-- TOPBAR -->
-
-        <header class="topbar">
-
-            <div>
-
-                <div class="topbar-title">
-                    Finance Center
-                </div>
-
-                <div class="topbar-subtitle">
-                    Payment & revenue management
-                </div>
-
-            </div>
-
-
-            <div class="topbar-actions">
-
-                <div class="topbar-date">
-                    Payment Center
-                </div>
-
-                <div class="topbar-avatar">
-                    {{ current_user.name[0]|upper }}
-                </div>
-
-            </div>
-
-        </header>
-
-
-        <!-- HERO -->
-
-        <section class="payment-hero">
-
-            <div class="payment-hero-content">
-
-                <span class="payment-kicker">
-                    FINANCE CENTER
-                </span>
-
-                <h1>
-                    Payment Dashboard
-                </h1>
-
-                <p>
-                    Monitor revenue, payments, refunds and outstanding balances.
-                </p>
-
-            </div>
-
-
-            <div class="payment-hero-actions">
-
-                <a
-                    href="{{ url_for('main.add_payment') }}"
-                    class="btn btn-primary"
-                >
-                    + Add Payment
-                </a>
-
-                <div class="payment-hero-icon">
-                    ◉
-                </div>
-
-            </div>
-
-        </section>
-
-
-        <!-- STAT CARDS -->
-
-        <section class="payment-stats">
-
-            <!-- TOTAL REVENUE -->
-
-            <div class="payment-stat-card">
-
-                <div class="payment-stat-icon">
-                    $
-                </div>
-
-                <div>
-
-                    <div class="payment-stat-label">
-                        Total Revenue
-                    </div>
-
-                    <div class="payment-stat-value">
-                        Rs. {{ "{:,.2f}".format(total_revenue or 0) }}
-                    </div>
-
-                    <small>
-                        Completed payments
-                    </small>
-
-                </div>
-
-            </div>
-
-
-            <!-- TODAY REVENUE -->
-
-            <div class="payment-stat-card">
-
-                <div class="payment-stat-icon">
-                    ◷
-                </div>
-
-                <div>
-
-                    <div class="payment-stat-label">
-                        Today's Revenue
-                    </div>
-
-                    <div class="payment-stat-value">
-                        Rs. {{ "{:,.2f}".format(today_revenue or 0) }}
-                    </div>
-
-                    <small>
-                        Payments received today
-                    </small>
-
-                </div>
-
-            </div>
-
-
-            <!-- PENDING -->
-
-            <div class="payment-stat-card">
-
-                <div class="payment-stat-icon">
-                    !
-                </div>
-
-                <div>
-
-                    <div class="payment-stat-label">
-                        Pending Payments
-                    </div>
-
-                    <div class="payment-stat-value">
-                        Rs. {{ "{:,.2f}".format(pending_payments or 0) }}
-                    </div>
-
-                    <small>
-                        Outstanding invoice balances
-                    </small>
-
-                </div>
-
-            </div>
-
-
-            <!-- PAID -->
-
-            <div class="payment-stat-card">
-
-                <div class="payment-stat-icon">
-                    ✓
-                </div>
-
-                <div>
-
-                    <div class="payment-stat-label">
-                        Paid Amount
-                    </div>
-
-                    <div class="payment-stat-value">
-                        Rs. {{ "{:,.2f}".format(paid_amount or 0) }}
-                    </div>
-
-                    <small>
-                        Total completed payments
-                    </small>
-
-                </div>
-
-            </div>
-
-
-            <!-- REFUNDS -->
-
-            <div class="payment-stat-card">
-
-                <div class="payment-stat-icon">
-                    ↩
-                </div>
-
-                <div>
-
-                    <div class="payment-stat-label">
-                        Refunds
-                    </div>
-
-                    <div class="payment-stat-value">
-                        Rs. {{ "{:,.2f}".format(refund_amount or 0) }}
-                    </div>
-
-                    <small>
-                        Refunded payments
-                    </small>
-
-                </div>
-
-            </div>
-
-
-            <!-- OUTSTANDING -->
-
-            <div class="payment-stat-card">
-
-                <div class="payment-stat-icon">
-                    ◌
-                </div>
-
-                <div>
-
-                    <div class="payment-stat-label">
-                        Outstanding Balance
-                    </div>
-
-                    <div class="payment-stat-value">
-                        Rs. {{ "{:,.2f}".format(outstanding_balance or 0) }}
-                    </div>
-
-                    <small>
-                        Customer balances
-                    </small>
-
-                </div>
-
-            </div>
-
-        </section>
-
-
-        <!-- PAYMENT HISTORY -->
-
-        <section class="payment-card">
-
-            <div class="payment-card-header">
-
-                <div>
-
-                    <span class="payment-card-kicker">
-                        TRANSACTION HISTORY
-                    </span>
-
-                    <h3>
-                        Recent Payments
-                    </h3>
-
-                    <p>
-                        Latest payment transactions recorded in the system.
-                    </p>
-
-                </div>
-
-
-                <a
-                    href="{{ url_for('main.invoices') }}"
-                    class="btn btn-outline-primary"
-                >
-                    View Invoices
-                </a>
-
-            </div>
-
-
-            {% if recent_payments %}
-
-            <div class="table-responsive">
-
-                <table class="table payment-table">
-
-                    <thead>
-
-                        <tr>
-
-                            <th>
-                                Payment
-                            </th>
-
-                            <th>
-                                Invoice
-                            </th>
-
-                            <th>
-                                Guest
-                            </th>
-
-                            <th>
-                                Method
-                            </th>
-
-                            <th>
-                                Amount
-                            </th>
-
-                            <th>
-                                Status
-                            </th>
-
-                            <th>
-                                Date
-                            </th>
-
-                        </tr>
-
-                    </thead>
-
-
-                    <tbody>
-
-                    {% for payment in recent_payments %}
-
-                        <tr>
-
-                            <!-- PAYMENT -->
-
-                            <td>
-
-                                <a
-                                    href="{{ url_for('main.payment_details', payment_id=payment.id) }}"
-                                    class="payment-reference"
-                                >
-
-                                    <span class="payment-reference-icon">
-                                        ◉
-                                    </span>
-
-                                    {{ payment.payment_reference }}
-
-                                </a>
-
-                            </td>
-
-
-                            <!-- INVOICE -->
-
-                            <td>
-
-                                {% if payment.invoice %}
-
-                                    <a
-                                        href="{{ url_for('main.invoice_details', invoice_id=payment.invoice.id) }}"
-                                        class="invoice-reference"
-                                    >
-                                        {{ payment.invoice.invoice_number }}
-                                    </a>
-
-                                {% else %}
-
-                                    <span class="text-muted">
-                                        —
-                                    </span>
-
-                                {% endif %}
-
-                            </td>
-
-
-                            <!-- GUEST -->
-
-                            <td>
-
-                                {% if payment.invoice and payment.invoice.booking %}
-
-                                    <div class="guest-cell">
-
-                                        <div class="table-avatar">
-                                            {{ payment.invoice.booking.user.name[0]|upper }}
-                                        </div>
-
-                                        <div>
-
-                                            <strong>
-                                                {{ payment.invoice.booking.user.name }}
-                                            </strong>
-
-                                            <small>
-                                                Room
-                                                {{ payment.invoice.booking.room.room_number }}
-                                            </small>
-
-                                        </div>
-
-                                    </div>
-
-                                {% else %}
-
-                                    <span class="text-muted">
-                                        —
-                                    </span>
-
-                                {% endif %}
-
-                            </td>
-
-
-                            <!-- METHOD -->
-
-                            <td>
-
-                                <span class="method-badge">
-                                    {{ payment.payment_method|replace('_', ' ')|title }}
-                                </span>
-
-                            </td>
-
-
-                            <!-- AMOUNT -->
-
-                            <td>
-
-                                <span class="payment-amount">
-                                    Rs. {{ "{:,.2f}".format(payment.amount or 0) }}
-                                </span>
-
-                            </td>
-
-
-                            <!-- STATUS -->
-
-                            <td>
-
-                                {% if payment.status == "completed" %}
-
-                                    <span class="payment-status completed">
-                                        Completed
-                                    </span>
-
-                                {% elif payment.status == "pending" %}
-
-                                    <span class="payment-status pending">
-                                        Pending
-                                    </span>
-
-                                {% elif payment.status == "refunded" %}
-
-                                    <span class="payment-status refunded">
-                                        Refunded
-                                    </span>
-
-                                {% else %}
-
-                                    <span class="payment-status other">
-                                        {{ payment.status|title }}
-                                    </span>
-
-                                {% endif %}
-
-                            </td>
-
-
-                            <!-- DATE -->
-
-                            <td>
-
-                                <span class="payment-date">
-
-                                    {{ payment.payment_date.strftime('%d %b %Y') }}
-
-                                </span>
-
-                            </td>
-
-                        </tr>
-
-                    {% endfor %}
-
-                    </tbody>
-
-                </table>
-
-            </div>
-
-            {% else %}
-
-            <!-- EMPTY STATE -->
-
-            <div class="payment-empty">
-
-                <div class="payment-empty-icon">
-                    ◉
-                </div>
-
-                <h4>
-                    No payments yet
-                </h4>
-
-                <p>
-                    Payment transactions will appear here once they are recorded.
-                </p>
-
-                <a
-                    href="{{ url_for('main.add_payment') }}"
-                    class="btn btn-primary"
-                >
-                    Add First Payment
-                </a>
-
-            </div>
-
-            {% endif %}
-
-        </section>
-
-    </main>
+        <h1 class="mt-2 mb-1">
+            Payments
+        </h1>
+
+        <p class="mb-0">
+            Monitor revenue, payments, refunds and outstanding balances.
+        </p>
+    </div>
+
+    <div class="d-flex gap-2">
+
+        <a href="{{ url_for('main.invoices') }}"
+           class="btn btn-light border px-4">
+            <i class="bi bi-receipt me-2"></i>
+            Invoices
+        </a>
+
+        <a href="{{ url_for('main.add_payment') }}"
+           class="btn btn-primary px-4">
+            <i class="bi bi-plus-lg me-2"></i>
+            Add Payment
+        </a>
+
+    </div>
 
 </div>
 
-</body>
-</html>
+
+<!-- FINANCIAL SUMMARY -->
+<div class="row g-4 mb-4">
+
+    <!-- TOTAL REVENUE -->
+    <div class="col-xl-3 col-md-6">
+
+        <div class="card border-0 shadow-sm h-100">
+
+            <div class="card-body p-4">
+
+                <div class="d-flex justify-content-between align-items-start">
+
+                    <div>
+                        <div class="text-muted small fw-semibold">
+                            TOTAL REVENUE
+                        </div>
+
+                        <div class="fs-3 fw-bold mt-2">
+                            Rs. {{ "{:,.2f}".format(total_revenue or 0) }}
+                        </div>
+
+                        <div class="small text-muted mt-1">
+                            Completed payments
+                        </div>
+                    </div>
+
+                    <div class="rounded-3 d-flex align-items-center justify-content-center"
+                         style="
+                            width:44px;
+                            height:44px;
+                            background:rgba(16,185,129,.10);
+                            color:#059669;
+                         ">
+                        <i class="bi bi-cash-stack fs-5"></i>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- TODAY -->
+    <div class="col-xl-3 col-md-6">
+
+        <div class="card border-0 shadow-sm h-100">
+
+            <div class="card-body p-4">
+
+                <div class="d-flex justify-content-between align-items-start">
+
+                    <div>
+                        <div class="text-muted small fw-semibold">
+                            TODAY'S REVENUE
+                        </div>
+
+                        <div class="fs-3 fw-bold mt-2">
+                            Rs. {{ "{:,.2f}".format(today_revenue or 0) }}
+                        </div>
+
+                        <div class="small text-muted mt-1">
+                            Collected today
+                        </div>
+                    </div>
+
+                    <div class="rounded-3 d-flex align-items-center justify-content-center"
+                         style="
+                            width:44px;
+                            height:44px;
+                            background:rgba(59,130,246,.10);
+                            color:#2563eb;
+                         ">
+                        <i class="bi bi-calendar-check fs-5"></i>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- OUTSTANDING -->
+    <div class="col-xl-3 col-md-6">
+
+        <div class="card border-0 shadow-sm h-100">
+
+            <div class="card-body p-4">
+
+                <div class="d-flex justify-content-between align-items-start">
+
+                    <div>
+                        <div class="text-muted small fw-semibold">
+                            OUTSTANDING
+                        </div>
+
+                        <div class="fs-3 fw-bold mt-2">
+                            Rs. {{ "{:,.2f}".format(outstanding_balance or 0) }}
+                        </div>
+
+                        <div class="small text-muted mt-1">
+                            Unpaid invoice balance
+                        </div>
+                    </div>
+
+                    <div class="rounded-3 d-flex align-items-center justify-content-center"
+                         style="
+                            width:44px;
+                            height:44px;
+                            background:rgba(245,158,11,.10);
+                            color:#d97706;
+                         ">
+                        <i class="bi bi-hourglass-split fs-5"></i>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- REFUNDS -->
+    <div class="col-xl-3 col-md-6">
+
+        <div class="card border-0 shadow-sm h-100">
+
+            <div class="card-body p-4">
+
+                <div class="d-flex justify-content-between align-items-start">
+
+                    <div>
+                        <div class="text-muted small fw-semibold">
+                            REFUNDS
+                        </div>
+
+                        <div class="fs-3 fw-bold mt-2">
+                            Rs. {{ "{:,.2f}".format(refund_amount or 0) }}
+                        </div>
+
+                        <div class="small text-muted mt-1">
+                            Refunded payments
+                        </div>
+                    </div>
+
+                    <div class="rounded-3 d-flex align-items-center justify-content-center"
+                         style="
+                            width:44px;
+                            height:44px;
+                            background:rgba(239,68,68,.10);
+                            color:#dc2626;
+                         ">
+                        <i class="bi bi-arrow-counterclockwise fs-5"></i>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- SECONDARY METRICS -->
+<div class="row g-4 mb-4">
+
+    <div class="col-lg-6">
+
+        <div class="card border-0 shadow-sm h-100">
+
+            <div class="card-body p-4">
+
+                <div class="d-flex align-items-center gap-3">
+
+                    <div class="rounded-3 d-flex align-items-center justify-content-center"
+                         style="
+                            width:46px;
+                            height:46px;
+                            background:rgba(201,162,39,.10);
+                            color:var(--lux-gold);
+                         ">
+                        <i class="bi bi-check2-circle fs-5"></i>
+                    </div>
+
+                    <div>
+                        <div class="text-muted small fw-semibold">
+                            PAID AMOUNT
+                        </div>
+
+                        <div class="fs-4 fw-bold mt-1">
+                            Rs. {{ "{:,.2f}".format(paid_amount or 0) }}
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="col-lg-6">
+
+        <div class="card border-0 shadow-sm h-100">
+
+            <div class="card-body p-4">
+
+                <div class="d-flex align-items-center gap-3">
+
+                    <div class="rounded-3 d-flex align-items-center justify-content-center"
+                         style="
+                            width:46px;
+                            height:46px;
+                            background:rgba(139,92,246,.10);
+                            color:#7c3aed;
+                         ">
+                        <i class="bi bi-clock-history fs-5"></i>
+                    </div>
+
+                    <div>
+                        <div class="text-muted small fw-semibold">
+                            PENDING BALANCE
+                        </div>
+
+                        <div class="fs-4 fw-bold mt-1">
+                            Rs. {{ "{:,.2f}".format(pending_payments or 0) }}
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- RECENT PAYMENTS -->
+<div class="card border-0 shadow-sm">
+
+    <div class="card-header bg-transparent border-0 px-4 pt-4 pb-3">
+
+        <div class="d-flex justify-content-between align-items-center gap-3 flex-wrap">
+
+            <div>
+
+                <h5 class="mb-1 fw-bold">
+                    Recent Payments
+                </h5>
+
+                <p class="text-muted small mb-0">
+                    Latest payment transactions recorded in the system.
+                </p>
+
+            </div>
+
+            <span class="badge rounded-pill px-3 py-2"
+                  style="
+                    background:#f1f5f9;
+                    color:#475569;
+                  ">
+                {{ recent_payments|length }} recent
+            </span>
+
+        </div>
+
+    </div>
+
+
+    {% if recent_payments %}
+
+    <div class="table-responsive">
+
+        <table class="table align-middle mb-0">
+
+            <thead>
+
+                <tr>
+
+                    <th class="ps-4">
+                        Payment
+                    </th>
+
+                    <th>
+                        Invoice
+                    </th>
+
+                    <th>
+                        Guest
+                    </th>
+
+                    <th>
+                        Method
+                    </th>
+
+                    <th>
+                        Amount
+                    </th>
+
+                    <th>
+                        Status
+                    </th>
+
+                    <th>
+                        Date
+                    </th>
+
+                    <th class="text-end pe-4">
+                        Action
+                    </th>
+
+                </tr>
+
+            </thead>
+
+
+            <tbody>
+
+                {% for payment in recent_payments %}
+
+                <tr>
+
+                    <!-- PAYMENT -->
+                    <td class="ps-4">
+
+                        <a href="{{ url_for(
+                            'main.payment_details',
+                            payment_id=payment.id
+                        ) }}"
+                           class="fw-semibold text-decoration-none">
+
+                            <i class="bi bi-credit-card-2-front me-2"></i>
+                            {{ payment.payment_reference }}
+
+                        </a>
+
+                    </td>
+
+
+                    <!-- INVOICE -->
+                    <td>
+
+                        {% if payment.invoice %}
+
+                            <a href="{{ url_for(
+                                'main.invoice_details',
+                                invoice_id=payment.invoice.id
+                            ) }}"
+                               class="text-decoration-none fw-semibold">
+
+                                {{ payment.invoice.invoice_number }}
+
+                            </a>
+
+                        {% else %}
+
+                            <span class="text-muted">
+                                —
+                            </span>
+
+                        {% endif %}
+
+                    </td>
+
+
+                    <!-- GUEST -->
+                    <td>
+
+                        {% if payment.invoice and payment.invoice.booking %}
+
+                            <div class="d-flex align-items-center gap-2">
+
+                                <div class="rounded-circle d-flex align-items-center justify-content-center"
+                                     style="
+                                        width:34px;
+                                        height:34px;
+                                        background:#e2e8f0;
+                                        color:#475569;
+                                        font-weight:700;
+                                     ">
+
+                                    {{ payment.invoice.booking.user.name[0]|upper }}
+
+                                </div>
+
+                                <div>
+
+                                    <div class="fw-semibold">
+                                        {{ payment.invoice.booking.user.name }}
+                                    </div>
+
+                                    <div class="small text-muted">
+                                        Room {{ payment.invoice.booking.room.room_number }}
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        {% else %}
+
+                            <span class="text-muted">
+                                —
+                            </span>
+
+                        {% endif %}
+
+                    </td>
+
+
+                    <!-- METHOD -->
+                    <td>
+
+                        <span class="badge rounded-pill"
+                              style="
+                                background:#f1f5f9;
+                                color:#475569;
+                              ">
+
+                            {{ payment.payment_method|replace('_', ' ')|title }}
+
+                        </span>
+
+                    </td>
+
+
+                    <!-- AMOUNT -->
+                    <td>
+
+                        <span class="fw-bold">
+                            Rs. {{ "{:,.2f}".format(payment.amount or 0) }}
+                        </span>
+
+                    </td>
+
+
+                    <!-- STATUS -->
+                    <td>
+
+                        {% if payment.status == "completed" %}
+
+                            <span class="badge rounded-pill px-3 py-2"
+                                  style="
+                                    background:#dcfce7;
+                                    color:#166534;
+                                  ">
+                                <i class="bi bi-check-circle me-1"></i>
+                                Completed
+                            </span>
+
+                        {% elif payment.status == "pending" %}
+
+                            <span class="badge rounded-pill px-3 py-2"
+                                  style="
+                                    background:#fef3c7;
+                                    color:#92400e;
+                                  ">
+                                <i class="bi bi-clock me-1"></i>
+                                Pending
+                            </span>
+
+                        {% elif payment.status == "refunded" %}
+
+                            <span class="badge rounded-pill px-3 py-2"
+                                  style="
+                                    background:#fee2e2;
+                                    color:#b91c1c;
+                                  ">
+                                <i class="bi bi-arrow-counterclockwise me-1"></i>
+                                Refunded
+                            </span>
+
+                        {% else %}
+
+                            <span class="badge rounded-pill px-3 py-2"
+                                  style="
+                                    background:#f1f5f9;
+                                    color:#475569;
+                                  ">
+                                {{ payment.status|title }}
+                            </span>
+
+                        {% endif %}
+
+                    </td>
+
+
+                    <!-- DATE -->
+                    <td>
+
+                        <span class="text-muted small">
+                            {{ payment.payment_date.strftime('%d %b %Y') }}
+                        </span>
+
+                    </td>
+
+
+                    <!-- ACTION -->
+                    <td class="text-end pe-4">
+
+                        <a href="{{ url_for(
+                            'main.payment_details',
+                            payment_id=payment.id
+                        ) }}"
+                           class="btn btn-sm btn-light border"
+                           title="View payment">
+
+                            <i class="bi bi-eye"></i>
+
+                        </a>
+
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+    {% else %}
+
+    <!-- EMPTY STATE -->
+
+    <div class="text-center py-5 px-4">
+
+        <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
+             style="
+                width:64px;
+                height:64px;
+                background:#f1f5f9;
+                color:#64748b;
+             ">
+
+            <i class="bi bi-credit-card fs-3"></i>
+
+        </div>
+
+        <h5 class="fw-bold">
+            No payments recorded
+        </h5>
+
+        <p class="text-muted mb-4">
+            Start by recording the first payment transaction.
+        </p>
+
+        <a href="{{ url_for('main.add_payment') }}"
+           class="btn btn-primary px-4">
+
+            <i class="bi bi-plus-lg me-2"></i>
+            Add First Payment
+
+        </a>
+
+    </div>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}

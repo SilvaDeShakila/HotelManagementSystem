@@ -1,228 +1,311 @@
+{% extends "base.html" %}
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add Payment | HotelSuite</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/premium.css') }}">
-</head>
+{% block title %}Record Payment | HotelPro{% endblock %}
 
-<body>
-<div class="app-shell payment-page">
+{% block content %}
 
-    <aside class="sidebar">
-        <div class="brand">
-            <div class="brand-mark">H</div>
-            <div>
-                <div class="brand-name">HotelSuite</div>
-                <div class="brand-subtitle">Management System</div>
-            </div>
+<div class="page-header mb-4">
+    <div>
+        <div class="text-uppercase small fw-semibold text-warning mb-1">
+            Payment Processing
         </div>
+        <h1 class="h2 fw-bold mb-1">Record Payment</h1>
+        <p class="text-muted mb-0">
+            Record a customer payment against an outstanding invoice.
+        </p>
+    </div>
 
-        <nav>
-            <a href="{{ url_for('main.index') }}"><span>▣</span>Dashboard</a>
-            <a href="{{ url_for('main.rooms') }}"><span>▤</span>Rooms</a>
-            <a href="{{ url_for('main.bookings') }}"><span>▣</span>Bookings</a>
-            <a href="{{ url_for('main.guests') }}"><span>♙</span>Guests</a>
-            <a href="{{ url_for('main.housekeeping') }}"><span>♧</span>Housekeeping</a>
-            <hr>
-            <a href="{{ url_for('main.payments') }}" class="active"><span>◉</span>Payments</a>
-            <a href="{{ url_for('main.invoices') }}"><span>▧</span>Invoices</a>
-        </nav>
+    <div class="d-flex gap-2">
+        <a href="{{ url_for('main.payments') }}"
+           class="btn btn-outline-light">
+            <i class="bi bi-arrow-left me-1"></i>
+            Back to Payments
+        </a>
 
-        <div class="sidebar-bottom">
-            <div class="sidebar-user">
-                <div class="avatar">{{ current_user.name[0]|upper }}</div>
-                <div>
-                    <strong>{{ current_user.name }}</strong>
-                    <small>{{ current_user.role|capitalize }}</small>
+        <a href="{{ url_for('main.invoices') }}"
+           class="btn btn-outline-warning">
+            <i class="bi bi-receipt me-1"></i>
+            Invoices
+        </a>
+    </div>
+</div>
+
+
+<div class="row g-4">
+
+    <!-- PAYMENT FORM -->
+    <div class="col-xl-8">
+
+        <div class="card h-100">
+
+            <div class="card-body p-4 p-lg-5">
+
+                <div class="d-flex align-items-center gap-3 mb-4">
+
+                    <div class="rounded-3 d-flex align-items-center justify-content-center"
+                         style="width:52px;height:52px;background:rgba(212,175,55,.12);color:#d4af37;">
+                        <i class="bi bi-credit-card fs-4"></i>
+                    </div>
+
+                    <div>
+                        <h4 class="fw-bold mb-1">Payment Information</h4>
+                        <p class="text-muted mb-0">
+                            Enter the payment details below.
+                        </p>
+                    </div>
+
                 </div>
-            </div>
-            <a href="{{ url_for('auth.logout') }}" class="logout-link">Logout</a>
-        </div>
-    </aside>
 
-    <main class="main-content">
 
-        <header class="topbar">
-            <div>
-                <div class="topbar-title">Finance Center</div>
-                <div class="topbar-subtitle">Record a customer payment</div>
-            </div>
-        </header>
+                <form method="POST">
 
-        <section class="page-hero">
-            <div>
-                <span class="page-hero-kicker">PAYMENT PROCESSING</span>
-                <h1>Record Payment</h1>
-                <p>Record a new payment against an outstanding invoice.</p>
-            </div>
-        </section>
+                    <!-- INVOICE -->
+                    <div class="mb-4">
 
-        <div class="row g-4">
+                        <label for="invoice_id" class="form-label fw-semibold">
+                            Invoice
+                        </label>
 
-            <div class="col-lg-8">
+                        <select
+                            name="invoice_id"
+                            id="invoice_id"
+                            class="form-select form-select-lg"
+                            required
+                        >
 
-                <div class="card p-4">
+                            <option value="">
+                                Select outstanding invoice
+                            </option>
 
-                    <h4 class="fw-bold mb-1">Payment Information</h4>
-                    <p class="text-muted mb-4">
-                        Enter the payment details below.
-                    </p>
+                            {% for invoice in invoices %}
 
-                    <form method="POST">
+                                {% if invoice.balance_amount > 0 %}
 
-                        <div class="mb-4">
-                            <label class="form-label fw-bold">
-                                Invoice
+                                <option
+                                    value="{{ invoice.id }}"
+                                    data-balance="{{ invoice.balance_amount }}"
+                                >
+                                    {{ invoice.invoice_number }}
+                                    —
+                                    {{ invoice.booking.user.name }}
+                                    —
+                                    Balance ₨ {{ "{:,.2f}".format(invoice.balance_amount) }}
+                                </option>
+
+                                {% endif %}
+
+                            {% endfor %}
+
+                        </select>
+
+                        <div class="form-text">
+                            Only invoices with an outstanding balance are available.
+                        </div>
+
+                    </div>
+
+
+                    <!-- AMOUNT + METHOD -->
+                    <div class="row g-4 mb-4">
+
+                        <div class="col-md-6">
+
+                            <label for="amount" class="form-label fw-semibold">
+                                Payment Amount
+                            </label>
+
+                            <div class="input-group input-group-lg">
+
+                                <span class="input-group-text">
+                                    ₨
+                                </span>
+
+                                <input
+                                    type="number"
+                                    name="amount"
+                                    id="amount"
+                                    class="form-control"
+                                    step="0.01"
+                                    min="0.01"
+                                    placeholder="0.00"
+                                    required
+                                >
+
+                            </div>
+
+                            <div class="form-text" id="balanceHint">
+                                Select an invoice to view its balance.
+                            </div>
+
+                        </div>
+
+
+                        <div class="col-md-6">
+
+                            <label for="payment_method"
+                                   class="form-label fw-semibold">
+                                Payment Method
                             </label>
 
                             <select
-                                name="invoice_id"
-                                id="invoice_id"
+                                name="payment_method"
+                                id="payment_method"
                                 class="form-select form-select-lg"
                                 required
                             >
-                                <option value="">Select invoice</option>
 
-                                {% for invoice in invoices %}
-                                    {% if invoice.balance_amount > 0 %}
-                                    <option
-                                        value="{{ invoice.id }}"
-                                        data-balance="{{ invoice.balance_amount }}"
-                                    >
-                                        {{ invoice.invoice_number }}
-                                        —
-                                        {{ invoice.booking.user.name }}
-                                        —
-                                        Balance ₨ {{ "{:,.2f}".format(invoice.balance_amount) }}
-                                    </option>
-                                    {% endif %}
-                                {% endfor %}
+                                <option value="cash">Cash</option>
+                                <option value="card">Card</option>
+                                <option value="bank_transfer">
+                                    Bank Transfer
+                                </option>
+                                <option value="online">
+                                    Online Payment
+                                </option>
+
                             </select>
-                        </div>
-
-                        <div class="row g-3 mb-4">
-
-                            <div class="col-md-6">
-                                <label class="form-label fw-bold">
-                                    Payment Amount
-                                </label>
-
-                                <div class="input-group input-group-lg">
-                                    <span class="input-group-text">₨</span>
-                                    <input
-                                        type="number"
-                                        name="amount"
-                                        id="amount"
-                                        class="form-control"
-                                        min="0.01"
-                                        step="0.01"
-                                        required
-                                    >
-                                </div>
-
-                                <small id="balanceHelp" class="text-muted">
-                                    Select an invoice to see the outstanding balance.
-                                </small>
-                            </div>
-
-                            <div class="col-md-6">
-                                <label class="form-label fw-bold">
-                                    Payment Method
-                                </label>
-
-                                <select
-                                    name="payment_method"
-                                    class="form-select form-select-lg"
-                                    required
-                                >
-                                    <option value="cash">Cash</option>
-                                    <option value="card">Card</option>
-                                    <option value="bank_transfer">Bank Transfer</option>
-                                    <option value="online_payment">Online Payment</option>
-                                    <option value="other">Other</option>
-                                </select>
-                            </div>
 
                         </div>
 
-                        <div class="mb-4">
-                            <label class="form-label fw-bold">
-                                Transaction Reference
-                            </label>
+                    </div>
 
-                            <input
-                                type="text"
-                                name="transaction_reference"
-                                class="form-control"
-                                placeholder="Card / bank / online transaction reference"
-                            >
+
+                    <!-- TRANSACTION REFERENCE -->
+                    <div class="mb-4">
+
+                        <label for="transaction_reference"
+                               class="form-label fw-semibold">
+
+                            Transaction Reference
+                            <span class="text-muted fw-normal">
+                                (Optional)
+                            </span>
+
+                        </label>
+
+                        <input
+                            type="text"
+                            name="transaction_reference"
+                            id="transaction_reference"
+                            class="form-control form-control-lg"
+                            placeholder="e.g. TXN-2026-00125"
+                        >
+
+                        <div class="form-text">
+                            Recommended for card, bank transfer, and online payments.
                         </div>
 
-                        <div class="mb-4">
-                            <label class="form-label fw-bold">
-                                Notes
-                            </label>
+                    </div>
 
-                            <textarea
-                                name="notes"
-                                class="form-control"
-                                rows="4"
-                                placeholder="Optional payment notes..."
-                            ></textarea>
-                        </div>
 
-                        <div class="d-flex gap-2">
-                            <a
-                                href="{{ url_for('main.payments') }}"
-                                class="btn btn-outline-secondary px-4"
-                            >
-                                Cancel
-                            </a>
+                    <!-- NOTES -->
+                    <div class="mb-4">
 
-                            <button
-                                type="submit"
-                                class="btn btn-primary px-4"
-                            >
-                                Record Payment
-                            </button>
-                        </div>
+                        <label for="notes"
+                               class="form-label fw-semibold">
 
-                    </form>
+                            Notes
+                            <span class="text-muted fw-normal">
+                                (Optional)
+                            </span>
 
-                </div>
+                        </label>
+
+                        <textarea
+                            name="notes"
+                            id="notes"
+                            class="form-control"
+                            rows="4"
+                            placeholder="Add any additional payment notes..."
+                        ></textarea>
+
+                    </div>
+
+
+                    <!-- ACTIONS -->
+                    <div class="d-flex justify-content-end gap-2 pt-3 border-top">
+
+                        <a href="{{ url_for('main.payments') }}"
+                           class="btn btn-outline-light px-4">
+                            Cancel
+                        </a>
+
+                        <button
+                            type="submit"
+                            class="btn btn-warning px-4 fw-semibold"
+                        >
+                            <i class="bi bi-check2-circle me-1"></i>
+                            Record Payment
+                        </button>
+
+                    </div>
+
+                </form>
 
             </div>
 
-            <div class="col-lg-4">
+        </div>
 
-                <div class="card p-4">
+    </div>
 
-                    <span class="section-kicker">
-                        PAYMENT GUIDE
-                    </span>
 
-                    <h4 class="fw-bold mt-2">
-                        Before saving
-                    </h4>
+    <!-- PAYMENT SUMMARY -->
+    <div class="col-xl-4">
 
-                    <ul class="text-muted mt-3 ps-3">
-                        <li class="mb-2">
-                            Select an invoice with an outstanding balance.
-                        </li>
-                        <li class="mb-2">
-                            Payment cannot exceed the invoice balance.
-                        </li>
-                        <li class="mb-2">
-                            Use transaction reference for card or bank payments.
-                        </li>
-                        <li>
-                            The invoice balance updates automatically.
-                        </li>
-                    </ul>
+        <div class="card mb-4">
+
+            <div class="card-body p-4">
+
+                <div class="d-flex align-items-center gap-2 mb-4">
+                    <i class="bi bi-shield-check text-warning fs-5"></i>
+
+                    <h5 class="fw-bold mb-0">
+                        Payment Summary
+                    </h5>
+                </div>
+
+
+                <div class="summary-box p-3 rounded-3 mb-3"
+                     style="background:rgba(255,255,255,.035);">
+
+                    <div class="small text-muted mb-1">
+                        Outstanding Balance
+                    </div>
+
+                    <div class="fs-3 fw-bold"
+                         id="summaryBalance">
+                        ₨ 0.00
+                    </div>
+
+                </div>
+
+
+                <div class="summary-box p-3 rounded-3 mb-3"
+                     style="background:rgba(255,255,255,.035);">
+
+                    <div class="small text-muted mb-1">
+                        Payment Amount
+                    </div>
+
+                    <div class="fs-3 fw-bold"
+                         id="summaryAmount">
+                        ₨ 0.00
+                    </div>
+
+                </div>
+
+
+                <div class="summary-box p-3 rounded-3"
+                     style="background:rgba(255,255,255,.035);">
+
+                    <div class="small text-muted mb-1">
+                        Remaining Balance
+                    </div>
+
+                    <div class="fs-3 fw-bold text-warning"
+                         id="summaryRemaining">
+                        ₨ 0.00
+                    </div>
 
                 </div>
 
@@ -230,33 +313,155 @@
 
         </div>
 
-    </main>
+
+        <div class="card">
+
+            <div class="card-body p-4">
+
+                <div class="d-flex gap-3">
+
+                    <div class="text-warning fs-4">
+                        <i class="bi bi-info-circle"></i>
+                    </div>
+
+                    <div>
+
+                        <h6 class="fw-bold">
+                            Payment Guidelines
+                        </h6>
+
+                        <ul class="small text-muted mb-0 ps-3">
+
+                            <li class="mb-2">
+                                Payment amount cannot exceed the outstanding balance.
+                            </li>
+
+                            <li class="mb-2">
+                                Completed payments immediately update the invoice balance.
+                            </li>
+
+                            <li>
+                                Keep transaction references for non-cash payments.
+                            </li>
+
+                        </ul>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
 </div>
 
+
 <script>
-const invoiceSelect = document.getElementById("invoice_id");
-const amountInput = document.getElementById("amount");
-const balanceHelp = document.getElementById("balanceHelp");
 
-invoiceSelect.addEventListener("change", function () {
-    const option = this.options[this.selectedIndex];
-    const balance = Number(option.dataset.balance || 0);
+document.addEventListener("DOMContentLoaded", function () {
 
-    if (balance > 0) {
-        balanceHelp.textContent =
-            "Outstanding balance: ₨ " +
-            balance.toLocaleString("en-US", {
-                minimumFractionDigits: 2
-            });
+    const invoiceSelect = document.getElementById("invoice_id");
+    const amountInput = document.getElementById("amount");
 
-        amountInput.max = balance;
-    } else {
-        balanceHelp.textContent =
-            "Select an invoice to see the outstanding balance.";
-        amountInput.removeAttribute("max");
+    const balanceHint = document.getElementById("balanceHint");
+
+    const summaryBalance = document.getElementById("summaryBalance");
+    const summaryAmount = document.getElementById("summaryAmount");
+    const summaryRemaining = document.getElementById("summaryRemaining");
+
+
+    let selectedBalance = 0;
+
+
+    function money(value) {
+        return "₨ " + Number(value || 0).toLocaleString(
+            "en-LK",
+            {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }
+        );
     }
+
+
+    function updateSummary() {
+
+        const amount = Number(amountInput.value || 0);
+
+        const remaining = Math.max(
+            selectedBalance - amount,
+            0
+        );
+
+        summaryBalance.textContent = money(selectedBalance);
+        summaryAmount.textContent = money(amount);
+        summaryRemaining.textContent = money(remaining);
+
+    }
+
+
+    invoiceSelect.addEventListener("change", function () {
+
+        const option =
+            invoiceSelect.options[invoiceSelect.selectedIndex];
+
+        selectedBalance = Number(
+            option.dataset.balance || 0
+        );
+
+        if (selectedBalance > 0) {
+
+            amountInput.max = selectedBalance;
+
+            balanceHint.textContent =
+                "Outstanding balance: " +
+                money(selectedBalance);
+
+            amountInput.placeholder =
+                selectedBalance.toFixed(2);
+
+        } else {
+
+            amountInput.removeAttribute("max");
+
+            balanceHint.textContent =
+                "Select an invoice to view its balance.";
+
+        }
+
+        updateSummary();
+
+    });
+
+
+    amountInput.addEventListener("input", function () {
+
+        let amount = Number(
+            amountInput.value || 0
+        );
+
+        if (
+            selectedBalance > 0 &&
+            amount > selectedBalance
+        ) {
+            amountInput.value =
+                selectedBalance.toFixed(2);
+
+            amount = selectedBalance;
+        }
+
+        updateSummary();
+
+    });
+
+
+    updateSummary();
+
 });
+
 </script>
 
-</body>
-</html>
+{% endblock %}

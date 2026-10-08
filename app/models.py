@@ -1,3 +1,4 @@
+
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -5,11 +6,26 @@ from . import db, login_manager
 
 
 class User(UserMixin, db.Model):
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(
+        db.Integer,
+        primary_key=True
+    )
 
-    name = db.Column(db.String(100), nullable=False)
-    email = db.Column(db.String(150), unique=True, nullable=False)
-    password_hash = db.Column(db.String(255), nullable=False)
+    name = db.Column(
+        db.String(100),
+        nullable=False
+    )
+
+    email = db.Column(
+        db.String(150),
+        unique=True,
+        nullable=False
+    )
+
+    password_hash = db.Column(
+        db.String(255),
+        nullable=False
+    )
 
     role = db.Column(
         db.String(20),
@@ -17,15 +33,29 @@ class User(UserMixin, db.Model):
         default="customer"
     )
 
+    is_active = db.Column(
+        db.Boolean,
+        nullable=False,
+        default=True
+    )
+
     def set_password(self, password):
-        self.password_hash = generate_password_hash(password)
+        self.password_hash = generate_password_hash(
+            password
+        )
 
     def check_password(self, password):
-        return check_password_hash(self.password_hash, password)
+        return check_password_hash(
+            self.password_hash,
+            password
+        )
 
 
 class Room(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(
+        db.Integer,
+        primary_key=True
+    )
 
     room_number = db.Column(
         db.String(20),
@@ -73,7 +103,10 @@ class Room(db.Model):
 
 
 class Booking(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(
+        db.Integer,
+        primary_key=True
+    )
 
     booking_reference = db.Column(
         db.String(20),
@@ -128,17 +161,26 @@ class Booking(db.Model):
 
     user = db.relationship(
         "User",
-        backref=db.backref("bookings", lazy=True)
+        backref=db.backref(
+            "bookings",
+            lazy=True
+        )
     )
 
     room = db.relationship(
         "Room",
-        backref=db.backref("bookings", lazy=True)
+        backref=db.backref(
+            "bookings",
+            lazy=True
+        )
     )
 
 
 class Invoice(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(
+        db.Integer,
+        primary_key=True
+    )
 
     invoice_number = db.Column(
         db.String(30),
@@ -228,7 +270,10 @@ class Invoice(db.Model):
 
 
 class InvoiceItem(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(
+        db.Integer,
+        primary_key=True
+    )
 
     invoice_id = db.Column(
         db.Integer,
@@ -267,7 +312,10 @@ class InvoiceItem(db.Model):
 
 
 class Payment(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(
+        db.Integer,
+        primary_key=True
+    )
 
     payment_reference = db.Column(
         db.String(30),
@@ -329,4 +377,7 @@ class Payment(db.Model):
 
 @login_manager.user_loader
 def load_user(user_id):
-    return db.session.get(User, int(user_id))
+    return db.session.get(
+        User,
+        int(user_id)
+    )

@@ -1,0 +1,477 @@
+﻿{% extends "base.html" %}
+
+{% block title %}My Payments | HotelPro{% endblock %}
+
+{% block content %}
+
+<!-- PAGE HEADER -->
+<div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3 mb-4">
+
+    <div>
+        <div class="text-uppercase small fw-bold text-muted"
+             style="letter-spacing:.14em;">
+            ACCOUNT / FINANCIAL
+        </div>
+
+        <h1 class="mt-2 mb-1">
+            My Payments
+        </h1>
+
+        <p class="text-muted mb-0">
+            View your payment history and transaction details.
+        </p>
+    </div>
+
+    <div class="d-flex gap-2">
+
+        <a href="{{ url_for('main.invoices') }}"
+           class="btn btn-light border px-4">
+            <i class="bi bi-receipt me-2"></i>
+            My Invoices
+        </a>
+
+        <a href="{{ url_for('main.bookings') }}"
+           class="btn btn-primary px-4">
+            <i class="bi bi-calendar2-check me-2"></i>
+            My Reservations
+        </a>
+
+    </div>
+
+</div>
+
+
+<!-- SUMMARY -->
+<div class="row g-4 mb-4">
+
+    <div class="col-md-4">
+
+        <div class="card border-0 shadow-sm h-100">
+
+            <div class="card-body p-4">
+
+                <div class="d-flex align-items-center justify-content-between">
+
+                    <div>
+                        <div class="text-uppercase small fw-semibold text-muted">
+                            TOTAL PAYMENTS
+                        </div>
+
+                        <div class="fs-3 fw-bold mt-2">
+                            {{ recent_payments|length }}
+                        </div>
+
+                        <div class="small text-muted mt-1">
+                            Recent transactions
+                        </div>
+                    </div>
+
+                    <div class="rounded-3 d-flex align-items-center justify-content-center"
+                         style="width:52px;height:52px;background:#eef2ff;">
+                        <i class="bi bi-credit-card fs-4"
+                           style="color:#4f46e5;"></i>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="col-md-4">
+
+        <div class="card border-0 shadow-sm h-100">
+
+            <div class="card-body p-4">
+
+                <div class="d-flex align-items-center justify-content-between">
+
+                    <div>
+                        <div class="text-uppercase small fw-semibold text-muted">
+                            COMPLETED
+                        </div>
+
+                        <div class="fs-3 fw-bold mt-2">
+                            {{ recent_payments
+                               |selectattr("status", "equalto", "completed")
+                               |list
+                               |length }}
+                        </div>
+
+                        <div class="small text-muted mt-1">
+                            Successful payments
+                        </div>
+                    </div>
+
+                    <div class="rounded-3 d-flex align-items-center justify-content-center"
+                         style="width:52px;height:52px;background:#ecfdf5;">
+                        <i class="bi bi-check-circle fs-4"
+                           style="color:#059669;"></i>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="col-md-4">
+
+        <div class="card border-0 shadow-sm h-100">
+
+            <div class="card-body p-4">
+
+                <div class="d-flex align-items-center justify-content-between">
+
+                    <div>
+                        <div class="text-uppercase small fw-semibold text-muted">
+                            PAID AMOUNT
+                        </div>
+
+                        <div class="fs-3 fw-bold mt-2">
+                            Rs.
+                            {{
+                                "{:,.2f}".format(
+                                    recent_payments
+                                    |selectattr("status", "equalto", "completed")
+                                    |map(attribute="amount")
+                                    |sum
+                                )
+                            }}
+                        </div>
+
+                        <div class="small text-muted mt-1">
+                            Completed transactions
+                        </div>
+                    </div>
+
+                    <div class="rounded-3 d-flex align-items-center justify-content-center"
+                         style="width:52px;height:52px;background:#fff7ed;">
+                        <i class="bi bi-wallet2 fs-4"
+                           style="color:#ea580c;"></i>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- PAYMENT HISTORY -->
+<div class="card border-0 shadow-sm">
+
+    <div class="card-header bg-transparent border-0 px-4 pt-4 pb-3">
+
+        <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-2">
+
+            <div>
+
+                <h5 class="mb-1 fw-bold">
+                    Payment History
+                </h5>
+
+                <p class="text-muted small mb-0">
+                    Your latest payment transactions.
+                </p>
+
+            </div>
+
+            <span class="badge rounded-pill px-3 py-2"
+                  style="background:#f1f5f9;color:#475569;">
+                {{ recent_payments|length }} transactions
+            </span>
+
+        </div>
+
+    </div>
+
+
+    {% if recent_payments %}
+
+    <div class="table-responsive">
+
+        <table class="table align-middle mb-0">
+
+            <thead>
+
+                <tr>
+
+                    <th class="ps-4">
+                        Payment
+                    </th>
+
+                    <th>
+                        Invoice
+                    </th>
+
+                    <th>
+                        Reservation
+                    </th>
+
+                    <th>
+                        Method
+                    </th>
+
+                    <th>
+                        Amount
+                    </th>
+
+                    <th>
+                        Status
+                    </th>
+
+                    <th>
+                        Date
+                    </th>
+
+                    <th class="text-end pe-4">
+                        Action
+                    </th>
+
+                </tr>
+
+            </thead>
+
+
+            <tbody>
+
+                {% for payment in recent_payments %}
+
+                <tr>
+
+                    <!-- PAYMENT -->
+                    <td class="ps-4">
+
+                        <a href="{{ url_for(
+                            'main.payment_details',
+                            payment_id=payment.id
+                        ) }}"
+                           class="fw-semibold text-decoration-none">
+
+                            <i class="bi bi-credit-card-2-front me-2"></i>
+
+                            {{ payment.payment_reference }}
+
+                        </a>
+
+                    </td>
+
+
+                    <!-- INVOICE -->
+                    <td>
+
+                        {% if payment.invoice %}
+
+                            <a href="{{ url_for(
+                                'main.invoice_details',
+                                invoice_id=payment.invoice.id
+                            ) }}"
+                               class="text-decoration-none fw-semibold">
+
+                                {{ payment.invoice.invoice_number }}
+
+                            </a>
+
+                        {% else %}
+
+                            <span class="text-muted">
+                                —
+                            </span>
+
+                        {% endif %}
+
+                    </td>
+
+
+                    <!-- RESERVATION -->
+                    <td>
+
+                        {% if payment.invoice and payment.invoice.booking %}
+
+                            <div>
+
+                                <div class="fw-semibold">
+
+                                    {{ payment.invoice.booking.booking_reference }}
+
+                                </div>
+
+                                <div class="small text-muted">
+
+                                    Room
+                                    {{ payment.invoice.booking.room.room_number }}
+
+                                </div>
+
+                            </div>
+
+                        {% else %}
+
+                            <span class="text-muted">
+                                —
+                            </span>
+
+                        {% endif %}
+
+                    </td>
+
+
+                    <!-- METHOD -->
+                    <td>
+
+                        <span class="badge rounded-pill px-3 py-2"
+                              style="background:#f1f5f9;color:#475569;">
+
+                            {{ payment.payment_method
+                               |replace('_', ' ')
+                               |title }}
+
+                        </span>
+
+                    </td>
+
+
+                    <!-- AMOUNT -->
+                    <td>
+
+                        <span class="fw-bold">
+
+                            Rs.
+                            {{ "{:,.2f}".format(payment.amount or 0) }}
+
+                        </span>
+
+                    </td>
+
+
+                    <!-- STATUS -->
+                    <td>
+
+                        {% if payment.status == "completed" %}
+
+                            <span class="badge rounded-pill px-3 py-2"
+                                  style="background:#dcfce7;color:#166534;">
+
+                                <i class="bi bi-check-circle me-1"></i>
+                                Completed
+
+                            </span>
+
+                        {% elif payment.status == "pending" %}
+
+                            <span class="badge rounded-pill px-3 py-2"
+                                  style="background:#fef3c7;color:#92400e;">
+
+                                <i class="bi bi-clock me-1"></i>
+                                Pending
+
+                            </span>
+
+                        {% elif payment.status == "refunded" %}
+
+                            <span class="badge rounded-pill px-3 py-2"
+                                  style="background:#fee2e2;color:#991b1b;">
+
+                                <i class="bi bi-arrow-counterclockwise me-1"></i>
+                                Refunded
+
+                            </span>
+
+                        {% else %}
+
+                            <span class="badge rounded-pill px-3 py-2"
+                                  style="background:#f1f5f9;color:#475569;">
+
+                                {{ payment.status|title }}
+
+                            </span>
+
+                        {% endif %}
+
+                    </td>
+
+
+                    <!-- DATE -->
+                    <td>
+
+                        <span class="text-muted small">
+
+                            {{ payment.payment_date.strftime('%d %b %Y') }}
+
+                        </span>
+
+                    </td>
+
+
+                    <!-- ACTION -->
+                    <td class="text-end pe-4">
+
+                        <a href="{{ url_for(
+                            'main.payment_details',
+                            payment_id=payment.id
+                        ) }}"
+                           class="btn btn-sm btn-light border"
+                           title="View payment">
+
+                            <i class="bi bi-eye"></i>
+
+                        </a>
+
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+    {% else %}
+
+    <!-- EMPTY STATE -->
+    <div class="text-center py-5 px-4">
+
+        <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
+             style="width:72px;height:72px;background:#f1f5f9;">
+
+            <i class="bi bi-credit-card fs-2 text-muted"></i>
+
+        </div>
+
+        <h5 class="fw-bold">
+            No payments yet
+        </h5>
+
+        <p class="text-muted mb-4">
+            Your payment transactions will appear here after a payment is recorded.
+        </p>
+
+        <a href="{{ url_for('main.bookings') }}"
+           class="btn btn-primary px-4">
+
+            <i class="bi bi-calendar2-check me-2"></i>
+            View My Reservations
+
+        </a>
+
+    </div>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}

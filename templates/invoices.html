@@ -1,1040 +1,465 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+{% extends "base.html" %}
 
-    <title>Invoices | HotelSuite</title>
+{% block title %}Invoices | HotelPro{% endblock %}
 
-    <link
-        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-        rel="stylesheet"
-    >
+{% block content %}
 
-    <link
-        rel="stylesheet"
-        href="{{ url_for('static', filename='css/premium.css') }}"
-    >
+<div class="page-header mb-4">
 
-    <style>
-        /* =========================================
-           PREMIUM INVOICE PAGE
-        ========================================= */
+    <div>
+        <div class="text-uppercase small fw-semibold text-warning mb-1">
+            Financial Management
+        </div>
 
-        .invoice-page {
-            display: flex !important;
-            flex-direction: row !important;
-            min-height: 100vh;
-            width: 100%;
-        }
+        <h1 class="h2 fw-bold mb-1">Invoices</h1>
 
-        .invoice-page .sidebar {
-            flex: 0 0 260px !important;
-            width: 260px !important;
-            min-width: 260px !important;
-        }
+        <p class="text-muted mb-0">
+            Manage customer invoices, payments and outstanding balances.
+        </p>
+    </div>
 
-        .invoice-page .main-content {
-            flex: 1 1 auto !important;
-            width: auto !important;
-            min-width: 0 !important;
-            margin: 0 !important;
-            padding: 28px 32px !important;
-            overflow-x: hidden;
-        }
+    <div class="d-flex gap-2">
 
-        /* Topbar */
+        <a href="{{ url_for('main.payments') }}"
+           class="btn btn-outline-warning">
+            <i class="bi bi-credit-card me-1"></i>
+            Payment Center
+        </a>
 
-        .invoice-page .topbar {
-            margin-bottom: 24px;
-        }
+        {% if current_user.role in ['admin', 'staff'] %}
+        <a href="{{ url_for('main.bookings') }}"
+           class="btn btn-warning fw-semibold">
+            <i class="bi bi-calendar-plus me-1"></i>
+            View Reservations
+        </a>
+        {% endif %}
 
-        .invoice-page .topbar-title {
-            font-weight: 800;
-        }
+    </div>
 
-        /* Hero */
+</div>
 
-        .invoice-hero {
-            position: relative;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 24px;
 
-            padding: 34px 36px;
-            margin-bottom: 24px;
+<!-- SUMMARY -->
+<div class="row g-4 mb-4">
 
-            border-radius: 20px;
+    <!-- TOTAL -->
+    <div class="col-md-4">
 
-            background:
-                radial-gradient(
-                    circle at 85% 20%,
-                    rgba(201, 162, 39, .20),
-                    transparent 30%
-                ),
-                linear-gradient(
-                    135deg,
-                    #0b1120 0%,
-                    #111827 55%,
-                    #172033 100%
-                );
+        <div class="card h-100">
 
-            color: white;
-            box-shadow: 0 18px 45px rgba(15, 23, 42, .16);
-        }
+            <div class="card-body p-4">
 
-        .invoice-hero::after {
-            content: "";
-            position: absolute;
-            width: 220px;
-            height: 220px;
-            right: -90px;
-            bottom: -120px;
+                <div class="d-flex justify-content-between align-items-start">
 
-            border-radius: 50%;
-            border: 1px solid rgba(231, 207, 115, .25);
-        }
+                    <div>
 
-        .invoice-hero-content {
-            position: relative;
-            z-index: 2;
-        }
+                        <div class="small text-uppercase text-muted mb-2">
+                            Total Invoices
+                        </div>
 
-        .invoice-kicker {
-            display: inline-block;
+                        <div class="display-6 fw-bold">
+                            {{ invoices|length }}
+                        </div>
 
-            font-size: 10px;
-            font-weight: 800;
-            letter-spacing: 1.8px;
+                        <div class="small text-muted mt-2">
+                            Invoices registered in the system
+                        </div>
 
-            color: #e7cf73;
-            margin-bottom: 7px;
-        }
+                    </div>
 
-        .invoice-hero h1 {
-            margin: 0 0 8px;
+                    <div class="rounded-3 d-flex align-items-center justify-content-center"
+                         style="width:48px;height:48px;background:rgba(212,175,55,.12);color:#d4af37;">
+                        <i class="bi bi-receipt-cutoff fs-5"></i>
+                    </div>
 
-            font-size: 32px;
-            font-weight: 850;
-            letter-spacing: -.5px;
-        }
+                </div>
 
-        .invoice-hero p {
-            margin: 0;
-
-            color: rgba(255,255,255,.68);
-            font-size: 14px;
-        }
-
-        .invoice-hero-icon {
-            position: relative;
-            z-index: 2;
-
-            width: 68px;
-            height: 68px;
-
-            display: grid;
-            place-items: center;
-
-            border-radius: 20px;
-
-            background: rgba(255,255,255,.08);
-            border: 1px solid rgba(231,207,115,.25);
-
-            color: #e7cf73;
-            font-size: 30px;
-
-            box-shadow:
-                inset 0 1px 0 rgba(255,255,255,.08),
-                0 12px 30px rgba(0,0,0,.15);
-        }
-
-        /* Summary cards */
-
-        .invoice-summary {
-            display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-            gap: 18px;
-
-            margin-bottom: 24px;
-        }
-
-        .invoice-summary-card {
-            position: relative;
-
-            padding: 22px;
-
-            background: rgba(255,255,255,.94);
-
-            border: 1px solid rgba(15,23,42,.06);
-            border-radius: 17px;
-
-            box-shadow: 0 10px 30px rgba(15,23,42,.055);
-
-            transition: .25s ease;
-        }
-
-        .invoice-summary-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 18px 40px rgba(15,23,42,.09);
-        }
-
-        .invoice-summary-top {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-
-            margin-bottom: 13px;
-        }
-
-        .invoice-summary-label {
-            font-size: 10px;
-            font-weight: 800;
-            letter-spacing: 1.1px;
-            text-transform: uppercase;
-
-            color: #64748b;
-        }
-
-        .invoice-summary-icon {
-            width: 38px;
-            height: 38px;
-
-            display: grid;
-            place-items: center;
-
-            border-radius: 11px;
-
-            background: #f8fafc;
-            color: #c9a227;
-
-            font-size: 16px;
-            font-weight: 800;
-        }
-
-        .invoice-summary-value {
-            font-size: 25px;
-            font-weight: 850;
-
-            color: #0f172a;
-        }
-
-        .invoice-summary-description {
-            margin-top: 4px;
-
-            color: #94a3b8;
-            font-size: 12px;
-        }
-
-        /* Main table card */
-
-        .invoice-card {
-            overflow: hidden;
-
-            background: rgba(255,255,255,.96);
-
-            border: 1px solid rgba(15,23,42,.06);
-            border-radius: 18px;
-
-            box-shadow: 0 12px 35px rgba(15,23,42,.06);
-        }
-
-        .invoice-card-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-
-            gap: 20px;
-
-            padding: 25px 26px;
-
-            border-bottom: 1px solid #eef2f7;
-        }
-
-        .invoice-card-kicker {
-            display: block;
-
-            margin-bottom: 5px;
-
-            color: #c9a227;
-
-            font-size: 10px;
-            font-weight: 800;
-            letter-spacing: 1.5px;
-        }
-
-        .invoice-card-header h3 {
-            margin: 0 0 5px;
-
-            color: #0f172a;
-
-            font-size: 19px;
-            font-weight: 800;
-        }
-
-        .invoice-card-header p {
-            margin: 0;
-
-            color: #94a3b8;
-            font-size: 13px;
-        }
-
-        /* Table */
-
-        .invoice-table {
-            margin: 0 !important;
-        }
-
-        .invoice-table thead th {
-            padding: 14px 20px;
-
-            background: #f8fafc;
-
-            color: #64748b;
-
-            font-size: 10px;
-            font-weight: 800;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-
-            border-bottom: 1px solid #e2e8f0;
-            white-space: nowrap;
-        }
-
-        .invoice-table tbody td {
-            padding: 17px 20px;
-
-            vertical-align: middle;
-
-            border-color: #f1f5f9;
-
-            color: #475569;
-            font-size: 13px;
-        }
-
-        .invoice-table tbody tr {
-            transition: .2s ease;
-        }
-
-        .invoice-table tbody tr:hover {
-            background: #fbfcfe;
-        }
-
-        .invoice-number {
-            display: inline-flex;
-            align-items: center;
-            gap: 9px;
-
-            color: #0f172a;
-
-            font-weight: 800;
-            text-decoration: none;
-        }
-
-        .invoice-number:hover {
-            color: #c9a227;
-        }
-
-        .invoice-number-icon {
-            width: 32px;
-            height: 32px;
-
-            display: grid;
-            place-items: center;
-
-            border-radius: 9px;
-
-            background: #f8fafc;
-            color: #c9a227;
-
-            font-size: 13px;
-        }
-
-        .guest-info strong {
-            display: block;
-
-            color: #0f172a;
-            font-weight: 750;
-        }
-
-        .guest-info small {
-            display: block;
-            margin-top: 3px;
-
-            color: #94a3b8;
-            font-size: 11px;
-        }
-
-        .booking-reference {
-            color: #2563eb;
-
-            font-weight: 700;
-        }
-
-        .money-total {
-            color: #0f172a;
-            font-weight: 800;
-            white-space: nowrap;
-        }
-
-        .money-paid {
-            color: #15803d;
-            font-weight: 800;
-            white-space: nowrap;
-        }
-
-        .money-balance {
-            color: #dc2626;
-            font-weight: 800;
-            white-space: nowrap;
-        }
-
-        /* Status */
-
-        .invoice-status {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-
-            padding: 7px 11px;
-
-            border-radius: 9px;
-
-            font-size: 10px;
-            font-weight: 800;
-            letter-spacing: .3px;
-        }
-
-        .invoice-status::before {
-            content: "";
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
-            background: currentColor;
-        }
-
-        .invoice-status.paid {
-            background: #dcfce7;
-            color: #15803d;
-        }
-
-        .invoice-status.partial {
-            background: #fef3c7;
-            color: #b45309;
-        }
-
-        .invoice-status.unpaid {
-            background: #fee2e2;
-            color: #b91c1c;
-        }
-
-        /* Empty state */
-
-        .invoice-empty {
-            padding: 75px 24px;
-
-            text-align: center;
-        }
-
-        .invoice-empty-icon {
-            width: 68px;
-            height: 68px;
-
-            display: grid;
-            place-items: center;
-
-            margin: 0 auto 17px;
-
-            border-radius: 19px;
-
-            background:
-                linear-gradient(
-                    135deg,
-                    #f8fafc,
-                    #eef2f7
-                );
-
-            color: #c9a227;
-
-            font-size: 27px;
-            font-weight: 800;
-
-            box-shadow: inset 0 1px 0 white;
-        }
-
-        .invoice-empty h4 {
-            margin: 0 0 7px;
-
-            color: #0f172a;
-            font-weight: 800;
-        }
-
-        .invoice-empty p {
-            margin: 0 auto 20px;
-
-            max-width: 440px;
-
-            color: #94a3b8;
-            font-size: 13px;
-        }
-
-        /* Responsive */
-
-        @media (max-width: 1100px) {
-            .invoice-summary {
-                grid-template-columns: repeat(2, minmax(0, 1fr));
-            }
-        }
-
-        @media (max-width: 900px) {
-            .invoice-page {
-                display: block !important;
-            }
-
-            .invoice-page .sidebar {
-                width: 100% !important;
-                min-width: 0 !important;
-                max-width: none !important;
-            }
-
-            .invoice-page .main-content {
-                width: 100% !important;
-                padding: 22px !important;
-            }
-
-            .invoice-hero {
-                padding: 28px;
-            }
-
-            .invoice-card-header {
-                align-items: flex-start;
-                flex-direction: column;
-            }
-        }
-
-        @media (max-width: 600px) {
-            .invoice-page .main-content {
-                padding: 18px !important;
-            }
-
-            .invoice-summary {
-                grid-template-columns: 1fr;
-            }
-
-            .invoice-hero {
-                padding: 24px;
-            }
-
-            .invoice-hero h1 {
-                font-size: 27px;
-            }
-
-            .invoice-hero-icon {
-                display: none;
-            }
-
-            .invoice-card-header {
-                padding: 21px;
-            }
-
-            .invoice-table thead th,
-            .invoice-table tbody td {
-                padding-left: 14px;
-                padding-right: 14px;
-            }
-        }
-    </style>
-</head>
-
-<body>
-
-<div class="app-shell invoice-page">
-
-    <!-- SIDEBAR -->
-    <aside class="sidebar">
-
-        <div class="brand">
-
-            <div class="brand-mark">H</div>
-
-            <div>
-                <div class="brand-name">HotelSuite</div>
-                <div class="brand-subtitle">Management System</div>
             </div>
 
         </div>
 
-        <nav>
+    </div>
 
-            <a href="{{ url_for('main.index') }}">
-                <span>▣</span>
-                Dashboard
-            </a>
 
-            <a href="{{ url_for('main.rooms') }}">
-                <span>▤</span>
-                Rooms
-            </a>
+    <!-- BILLED -->
+    <div class="col-md-4">
 
-            <a href="{{ url_for('main.bookings') }}">
-                <span>▣</span>
-                Bookings
-            </a>
+        <div class="card h-100">
 
-            <a href="{{ url_for('main.guests') }}">
-                <span>♙</span>
-                Guests
-            </a>
+            <div class="card-body p-4">
 
-            <a href="{{ url_for('main.housekeeping') }}">
-                <span>♧</span>
-                Housekeeping
-            </a>
+                {% set total_billed = invoices|sum(attribute='total_amount') %}
 
-            <hr>
+                <div class="d-flex justify-content-between align-items-start">
 
-            <a href="{{ url_for('main.payments') }}">
-                <span>◉</span>
-                Payments
-            </a>
+                    <div>
 
-            <a href="{{ url_for('main.invoices') }}" class="active">
-                <span>▧</span>
-                Invoices
-            </a>
+                        <div class="small text-uppercase text-muted mb-2">
+                            Total Billed
+                        </div>
 
-        </nav>
+                        <div class="fs-2 fw-bold">
+                            ₨ {{ "{:,.2f}".format(total_billed or 0) }}
+                        </div>
 
-        <div class="sidebar-bottom">
+                        <div class="small text-muted mt-2">
+                            Combined invoice value
+                        </div>
 
-            <div class="sidebar-user">
+                    </div>
 
-                <div class="avatar">
-                    {{ current_user.name[0]|upper }}
-                </div>
+                    <div class="rounded-3 d-flex align-items-center justify-content-center"
+                         style="width:48px;height:48px;background:rgba(25,135,84,.12);color:#198754;">
+                        <i class="bi bi-cash-stack fs-5"></i>
+                    </div>
 
-                <div>
-                    <strong>{{ current_user.name }}</strong>
-                    <small>{{ current_user.role|capitalize }}</small>
                 </div>
 
             </div>
-
-            <a
-                href="{{ url_for('auth.logout') }}"
-                class="logout-link"
-            >
-                Logout
-            </a>
 
         </div>
 
-    </aside>
+    </div>
 
 
-    <!-- MAIN CONTENT -->
-    <main class="main-content">
+    <!-- OUTSTANDING -->
+    <div class="col-md-4">
 
-        <!-- TOPBAR -->
-        <header class="topbar">
+        <div class="card h-100">
 
-            <div>
+            <div class="card-body p-4">
 
-                <div class="topbar-title">
-                    Finance Center
-                </div>
+                {% set total_balance = invoices|sum(attribute='balance_amount') %}
 
-                <div class="topbar-subtitle">
-                    Invoice & billing management
-                </div>
+                <div class="d-flex justify-content-between align-items-start">
 
-            </div>
+                    <div>
 
-            <div class="topbar-actions">
+                        <div class="small text-uppercase text-muted mb-2">
+                            Outstanding Balance
+                        </div>
 
-                <div class="topbar-date">
-                    Invoice Register
-                </div>
+                        <div class="fs-2 fw-bold">
+                            ₨ {{ "{:,.2f}".format(total_balance or 0) }}
+                        </div>
 
-                <div class="topbar-avatar">
-                    {{ current_user.name[0]|upper }}
-                </div>
+                        <div class="small text-muted mt-2">
+                            Amount still due
+                        </div>
 
-            </div>
+                    </div>
 
-        </header>
-
-
-        <!-- HERO -->
-        <section class="invoice-hero">
-
-            <div class="invoice-hero-content">
-
-                <span class="invoice-kicker">
-                    FINANCE CENTER
-                </span>
-
-                <h1>
-                    Invoice Management
-                </h1>
-
-                <p>
-                    Manage customer invoices, payments and outstanding balances.
-                </p>
-
-            </div>
-
-            <div class="invoice-hero-icon">
-                ▧
-            </div>
-
-        </section>
-
-
-        <!-- SUMMARY -->
-        <section class="invoice-summary">
-
-            <div class="invoice-summary-card">
-
-                <div class="invoice-summary-top">
-
-                    <span class="invoice-summary-label">
-                        Total Invoices
-                    </span>
-
-                    <div class="invoice-summary-icon">
-                        ▧
+                    <div class="rounded-3 d-flex align-items-center justify-content-center"
+                         style="width:48px;height:48px;background:rgba(220,53,69,.12);color:#dc3545;">
+                        <i class="bi bi-exclamation-circle fs-5"></i>
                     </div>
 
                 </div>
 
-                <div class="invoice-summary-value">
-                    {{ invoices|length }}
-                </div>
-
-                <div class="invoice-summary-description">
-                    Invoices registered in the system
-                </div>
-
             </div>
 
+        </div>
 
-            <div class="invoice-summary-card">
+    </div>
 
-                <div class="invoice-summary-top">
-
-                    <span class="invoice-summary-label">
-                        Total Billed
-                    </span>
-
-                    <div class="invoice-summary-icon">
-                        $
-                    </div>
-
-                </div>
-
-                <div class="invoice-summary-value">
-
-                    {% set total_billed = invoices|sum(attribute='total_amount') %}
-
-                    Rs. {{ "{:,.2f}".format(total_billed or 0) }}
-
-                </div>
-
-                <div class="invoice-summary-description">
-                    Total invoice value
-                </div>
-
-            </div>
+</div>
 
 
-            <div class="invoice-summary-card">
+<!-- INVOICE TABLE -->
+<div class="card">
 
-                <div class="invoice-summary-top">
+    <div class="card-body p-0">
 
-                    <span class="invoice-summary-label">
-                        Outstanding
-                    </span>
+        <div class="p-4 border-bottom">
 
-                    <div class="invoice-summary-icon">
-                        !
-                    </div>
-
-                </div>
-
-                <div class="invoice-summary-value">
-
-                    {% set total_balance = invoices|sum(attribute='balance_amount') %}
-
-                    Rs. {{ "{:,.2f}".format(total_balance or 0) }}
-
-                </div>
-
-                <div class="invoice-summary-description">
-                    Amount still to be collected
-                </div>
-
-            </div>
-
-        </section>
-
-
-        <!-- INVOICE TABLE -->
-        <section class="invoice-card">
-
-            <div class="invoice-card-header">
+            <div class="d-flex justify-content-between align-items-center">
 
                 <div>
 
-                    <span class="invoice-card-kicker">
-                        INVOICE REGISTER
-                    </span>
+                    <div class="small text-uppercase text-muted">
+                        Invoice Register
+                    </div>
 
-                    <h3>
+                    <h4 class="fw-bold mb-1">
                         All Invoices
-                    </h3>
+                    </h4>
 
-                    <p>
+                    <p class="text-muted mb-0">
                         Customer invoices, booking references and payment balances.
                     </p>
 
                 </div>
 
-                <a
-                    href="{{ url_for('main.payments') }}"
-                    class="btn btn-outline-primary"
-                >
-                    Payment Center
-                </a>
+                <span class="badge bg-secondary-subtle text-secondary px-3 py-2">
+                    {{ invoices|length }} Records
+                </span>
 
             </div>
 
-
-            {% if invoices %}
-
-            <div class="table-responsive">
-
-                <table class="table invoice-table">
-
-                    <thead>
-
-                        <tr>
-
-                            <th>
-                                Invoice
-                            </th>
-
-                            <th>
-                                Guest
-                            </th>
-
-                            <th>
-                                Booking
-                            </th>
-
-                            <th>
-                                Total
-                            </th>
-
-                            <th>
-                                Paid
-                            </th>
-
-                            <th>
-                                Balance
-                            </th>
-
-                            <th>
-                                Status
-                            </th>
-
-                        </tr>
-
-                    </thead>
+        </div>
 
 
-                    <tbody>
+        {% if invoices %}
+
+        <div class="table-responsive">
+
+            <table class="table table-hover align-middle mb-0">
+
+                <thead>
+
+                    <tr>
+
+                        <th class="ps-4">
+                            Invoice
+                        </th>
+
+                        <th>
+                            Guest
+                        </th>
+
+                        <th>
+                            Booking
+                        </th>
+
+                        <th>
+                            Total
+                        </th>
+
+                        <th>
+                            Paid
+                        </th>
+
+                        <th>
+                            Balance
+                        </th>
+
+                        <th>
+                            Status
+                        </th>
+
+                        <th class="text-end pe-4">
+                            Action
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
 
                     {% for invoice in invoices %}
 
-                        <tr>
+                    <tr>
 
-                            <!-- Invoice -->
+                        <!-- INVOICE -->
+                        <td class="ps-4">
 
-                            <td>
+                            <a href="{{ url_for(
+                                'main.invoice_details',
+                                invoice_id=invoice.id
+                            ) }}"
+                               class="text-decoration-none fw-bold">
 
-                                <a
-                                    href="{{ url_for('main.invoice_details', invoice_id=invoice.id) }}"
-                                    class="invoice-number"
-                                >
+                                <i class="bi bi-receipt-cutoff text-warning me-2"></i>
 
-                                    <span class="invoice-number-icon">
-                                        ▧
-                                    </span>
+                                {{ invoice.invoice_number }}
 
-                                    {{ invoice.invoice_number }}
+                            </a>
 
-                                </a>
-
-                            </td>
+                        </td>
 
 
-                            <!-- Guest -->
+                        <!-- GUEST -->
+                        <td>
 
-                            <td>
+                            {% if invoice.booking %}
 
-                                {% if invoice.booking %}
+                            <div class="d-flex align-items-center gap-2">
 
-                                    <div class="guest-info">
+                                <div class="user-avatar"
+                                     style="width:36px;height:36px;font-size:13px;">
 
-                                        <strong>
-                                            {{ invoice.booking.user.name }}
-                                        </strong>
+                                    {{ invoice.booking.user.name[:1]|upper }}
 
-                                        <small>
-                                            Room {{ invoice.booking.room.room_number }}
-                                        </small>
+                                </div>
 
+                                <div>
+
+                                    <div class="fw-semibold">
+                                        {{ invoice.booking.user.name }}
                                     </div>
 
-                                {% else %}
+                                    <div class="small text-muted">
+                                        Room {{ invoice.booking.room.room_number }}
+                                    </div>
 
-                                    <span class="text-muted">
-                                        —
-                                    </span>
+                                </div>
 
-                                {% endif %}
+                            </div>
 
-                            </td>
+                            {% else %}
 
+                            <span class="text-muted">
+                                —
+                            </span>
 
-                            <!-- Booking -->
+                            {% endif %}
 
-                            <td>
-
-                                {% if invoice.booking %}
-
-                                    <span class="booking-reference">
-                                        {{ invoice.booking.booking_reference }}
-                                    </span>
-
-                                {% else %}
-
-                                    <span class="text-muted">
-                                        —
-                                    </span>
-
-                                {% endif %}
-
-                            </td>
+                        </td>
 
 
-                            <!-- Total -->
+                        <!-- BOOKING -->
+                        <td>
 
-                            <td>
+                            {% if invoice.booking %}
 
-                                <span class="money-total">
-                                    Rs. {{ "{:,.2f}".format(invoice.total_amount or 0) }}
+                            <span class="badge bg-secondary-subtle text-secondary">
+                                {{ invoice.booking.booking_reference }}
+                            </span>
+
+                            {% else %}
+
+                            <span class="text-muted">
+                                —
+                            </span>
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <!-- TOTAL -->
+                        <td>
+
+                            <span class="fw-semibold">
+                                ₨ {{ "{:,.2f}".format(invoice.total_amount or 0) }}
+                            </span>
+
+                        </td>
+
+
+                        <!-- PAID -->
+                        <td>
+
+                            <span class="text-success fw-semibold">
+                                ₨ {{ "{:,.2f}".format(invoice.paid_amount or 0) }}
+                            </span>
+
+                        </td>
+
+
+                        <!-- BALANCE -->
+                        <td>
+
+                            {% if invoice.balance_amount and invoice.balance_amount > 0 %}
+
+                            <span class="text-danger fw-semibold">
+                                ₨ {{ "{:,.2f}".format(invoice.balance_amount) }}
+                            </span>
+
+                            {% else %}
+
+                            <span class="text-success fw-semibold">
+                                ₨ 0.00
+                            </span>
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <!-- STATUS -->
+                        <td>
+
+                            {% if invoice.status == "paid" %}
+
+                                <span class="badge bg-success-subtle text-success">
+                                    <i class="bi bi-check-circle me-1"></i>
+                                    Paid
                                 </span>
 
-                            </td>
+                            {% elif invoice.status == "partial" %}
 
-
-                            <!-- Paid -->
-
-                            <td>
-
-                                <span class="money-paid">
-                                    Rs. {{ "{:,.2f}".format(invoice.paid_amount or 0) }}
+                                <span class="badge bg-warning-subtle text-warning">
+                                    <i class="bi bi-pie-chart me-1"></i>
+                                    Partial
                                 </span>
 
-                            </td>
+                            {% else %}
 
-
-                            <!-- Balance -->
-
-                            <td>
-
-                                <span class="money-balance">
-                                    Rs. {{ "{:,.2f}".format(invoice.balance_amount or 0) }}
+                                <span class="badge bg-danger-subtle text-danger">
+                                    <i class="bi bi-exclamation-circle me-1"></i>
+                                    Unpaid
                                 </span>
 
-                            </td>
+                            {% endif %}
+
+                        </td>
 
 
-                            <!-- Status -->
+                        <!-- ACTION -->
+                        <td class="text-end pe-4">
 
-                            <td>
+                            <a href="{{ url_for(
+                                'main.invoice_details',
+                                invoice_id=invoice.id
+                            ) }}"
+                               class="btn btn-sm btn-outline-light">
 
-                                {% if invoice.status == "paid" %}
+                                <i class="bi bi-eye me-1"></i>
+                                View
 
-                                    <span class="invoice-status paid">
-                                        Paid
-                                    </span>
+                            </a>
 
-                                {% elif invoice.status == "partial" %}
+                        </td>
 
-                                    <span class="invoice-status partial">
-                                        Partial
-                                    </span>
-
-                                {% else %}
-
-                                    <span class="invoice-status unpaid">
-                                        Unpaid
-                                    </span>
-
-                                {% endif %}
-
-                            </td>
-
-                        </tr>
+                    </tr>
 
                     {% endfor %}
 
-                    </tbody>
+                </tbody>
 
-                </table>
+            </table>
 
-            </div>
+        </div>
 
-            {% else %}
 
-            <!-- EMPTY STATE -->
+        {% else %}
 
-            <div class="invoice-empty">
+        <!-- EMPTY STATE -->
+        <div class="text-center py-5 px-4">
 
-                <div class="invoice-empty-icon">
-                    ▧
-                </div>
+            <div class="rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3"
+                 style="width:72px;height:72px;background:rgba(212,175,55,.10);color:#d4af37;">
 
-                <h4>
-                    No invoices yet
-                </h4>
-
-                <p>
-                    Create an invoice from a booking to begin collecting payments
-                    and managing customer balances.
-                </p>
-
-                <a
-                    href="{{ url_for('main.bookings') }}"
-                    class="btn btn-primary"
-                >
-                    View Bookings
-                </a>
+                <i class="bi bi-receipt fs-2"></i>
 
             </div>
 
-            {% endif %}
+            <h4 class="fw-bold">
+                No invoices yet
+            </h4>
 
-        </section>
+            <p class="text-muted mb-4">
+                Create an invoice from a reservation to begin collecting
+                payments and managing customer balances.
+            </p>
 
-    </main>
+            <a href="{{ url_for('main.bookings') }}"
+               class="btn btn-warning fw-semibold">
+
+                <i class="bi bi-calendar-check me-1"></i>
+                View Reservations
+
+            </a>
+
+        </div>
+
+        {% endif %}
+
+    </div>
 
 </div>
 
-</body>
-</html>
+{% endblock %}

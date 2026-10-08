@@ -1,277 +1,685 @@
+{% extends "base.html" %}
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Invoice {{ invoice.invoice_number }} | HotelSuite</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/premium.css') }}">
-</head>
+{% block title %}Invoice {{ invoice.invoice_number }} | HotelPro{% endblock %}
 
-<body>
-<div class="app-shell payment-page">
+{% block content %}
 
-    <aside class="sidebar">
-        <div class="brand">
-            <div class="brand-mark">H</div>
-            <div>
-                <div class="brand-name">HotelSuite</div>
-                <div class="brand-subtitle">Management System</div>
-            </div>
+<div class="page-header mb-4">
+
+    <div>
+        <div class="text-uppercase small fw-semibold text-warning mb-1">
+            Invoice
         </div>
 
-        <nav>
-            <a href="{{ url_for('main.index') }}"><span>▣</span>Dashboard</a>
-            <a href="{{ url_for('main.rooms') }}"><span>▤</span>Rooms</a>
-            <a href="{{ url_for('main.bookings') }}"><span>▣</span>Bookings</a>
-            <a href="{{ url_for('main.guests') }}"><span>♙</span>Guests</a>
-            <a href="{{ url_for('main.housekeeping') }}"><span>♧</span>Housekeeping</a>
-            <hr>
-            <a href="{{ url_for('main.payments') }}"><span>◉</span>Payments</a>
-            <a href="{{ url_for('main.invoices') }}" class="active"><span>▧</span>Invoices</a>
-        </nav>
+        <h1 class="h2 fw-bold mb-1">
+            {{ invoice.invoice_number }}
+        </h1>
 
-        <div class="sidebar-bottom">
-            <div class="sidebar-user">
-                <div class="avatar">{{ current_user.name[0]|upper }}</div>
-                <div>
-                    <strong>{{ current_user.name }}</strong>
-                    <small>{{ current_user.role|capitalize }}</small>
+        <p class="text-muted mb-0">
+            Detailed invoice, charges and payment history.
+        </p>
+    </div>
+
+    <div class="d-flex align-items-center gap-2">
+
+        {% if invoice.status == "paid" %}
+
+            <span class="badge bg-success-subtle text-success px-3 py-2">
+                <i class="bi bi-check-circle me-1"></i>
+                Paid
+            </span>
+
+        {% elif invoice.status == "partial" %}
+
+            <span class="badge bg-warning-subtle text-warning px-3 py-2">
+                <i class="bi bi-pie-chart me-1"></i>
+                Partially Paid
+            </span>
+
+        {% else %}
+
+            <span class="badge bg-danger-subtle text-danger px-3 py-2">
+                <i class="bi bi-exclamation-circle me-1"></i>
+                Unpaid
+            </span>
+
+        {% endif %}
+
+        <a href="{{ url_for('main.invoices') }}"
+           class="btn btn-outline-light">
+
+            <i class="bi bi-arrow-left me-1"></i>
+            Back to Invoices
+
+        </a>
+
+    </div>
+
+</div>
+
+
+<div class="row g-4">
+
+    <!-- MAIN CONTENT -->
+    <div class="col-xl-8">
+
+        <!-- BILLING DETAILS -->
+        <div class="card mb-4">
+
+            <div class="card-body p-4">
+
+                <div class="d-flex align-items-center gap-3 mb-4">
+
+                    <div class="rounded-3 d-flex align-items-center justify-content-center"
+                         style="width:50px;height:50px;background:rgba(212,175,55,.12);color:#d4af37;">
+
+                        <i class="bi bi-person-vcard fs-5"></i>
+
+                    </div>
+
+                    <div>
+
+                        <div class="small text-uppercase text-muted">
+                            Billing Details
+                        </div>
+
+                        <h5 class="fw-bold mb-0">
+                            Reservation Information
+                        </h5>
+
+                    </div>
+
                 </div>
-            </div>
-            <a href="{{ url_for('auth.logout') }}" class="logout-link">Logout</a>
-        </div>
-    </aside>
 
-    <main class="main-content">
 
-        <header class="topbar">
-            <div>
-                <div class="topbar-title">Finance Center</div>
-                <div class="topbar-subtitle">Invoice details</div>
-            </div>
-        </header>
+                {% if invoice.booking %}
 
-        <section class="page-hero">
-            <div>
-                <span class="page-hero-kicker">INVOICE</span>
-                <h1>{{ invoice.invoice_number }}</h1>
-                <p>Detailed invoice, charges and payment history.</p>
-            </div>
+                <div class="row g-4">
 
-            <div>
-                {% if invoice.status == "paid" %}
-                    <span class="status-pill status-paid">Paid</span>
-                {% elif invoice.status == "partial" %}
-                    <span class="status-pill status-pending">Partially Paid</span>
-                {% else %}
-                    <span class="status-pill">Unpaid</span>
-                {% endif %}
-            </div>
-        </section>
+                    <div class="col-md-6">
 
-        <div class="row g-4">
+                        <div class="small text-muted mb-1">
+                            Guest
+                        </div>
 
-            <div class="col-lg-8">
+                        <div class="d-flex align-items-center gap-2">
 
-                <div class="card p-4 mb-4">
+                            <div class="user-avatar"
+                                 style="width:38px;height:38px;font-size:13px;">
 
-                    <span class="section-kicker">BILLING DETAILS</span>
+                                {{ invoice.booking.user.name[:1]|upper }}
 
-                    {% if invoice.booking %}
+                            </div>
 
-                    <div class="row g-4 mt-1">
-
-                        <div class="col-md-6">
-                            <small class="text-muted">Guest</small>
-                            <h5 class="fw-bold mt-1">
+                            <div class="fw-bold">
                                 {{ invoice.booking.user.name }}
-                            </h5>
-                        </div>
+                            </div>
 
-                        <div class="col-md-6">
-                            <small class="text-muted">Room</small>
-                            <h5 class="fw-bold mt-1">
-                                {{ invoice.booking.room.room_number }}
-                            </h5>
-                        </div>
-
-                        <div class="col-md-6">
-                            <small class="text-muted">Booking Reference</small>
-                            <h5 class="fw-bold mt-1">
-                                {{ invoice.booking.booking_reference }}
-                            </h5>
-                        </div>
-
-                        <div class="col-md-6">
-                            <small class="text-muted">Stay</small>
-                            <h5 class="fw-bold mt-1">
-                                {{ invoice.booking.check_in }}
-                                →
-                                {{ invoice.booking.check_out }}
-                            </h5>
                         </div>
 
                     </div>
 
-                    {% endif %}
+
+                    <div class="col-md-6">
+
+                        <div class="small text-muted mb-1">
+                            Room
+                        </div>
+
+                        <div class="fw-bold">
+
+                            <i class="bi bi-door-open text-warning me-1"></i>
+
+                            Room {{ invoice.booking.room.room_number }}
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="col-md-6">
+
+                        <div class="small text-muted mb-1">
+                            Booking Reference
+                        </div>
+
+                        <span class="badge bg-secondary-subtle text-secondary px-3 py-2">
+
+                            {{ invoice.booking.booking_reference }}
+
+                        </span>
+
+                    </div>
+
+
+                    <div class="col-md-6">
+
+                        <div class="small text-muted mb-1">
+                            Stay
+                        </div>
+
+                        <div class="fw-semibold">
+
+                            {{ invoice.booking.check_in }}
+                            <span class="text-muted mx-1">→</span>
+                            {{ invoice.booking.check_out }}
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                {% else %}
+
+                <p class="text-muted mb-0">
+                    No booking information is attached to this invoice.
+                </p>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+
+        <!-- INVOICE ITEMS -->
+        <div class="card mb-4">
+
+            <div class="card-body p-0">
+
+                <div class="p-4 border-bottom">
+
+                    <div class="small text-uppercase text-muted">
+                        Invoice Items
+                    </div>
+
+                    <h4 class="fw-bold mb-1">
+                        Charges
+                    </h4>
+
+                    <p class="text-muted mb-0">
+                        Detailed breakdown of invoice charges.
+                    </p>
 
                 </div>
 
 
-                <div class="card payment-table-card">
+                {% if invoice.items %}
 
-                    <div class="payment-table-header">
-                        <div>
-                            <span class="section-kicker">INVOICE ITEMS</span>
-                            <h3>Charges</h3>
-                        </div>
-                    </div>
+                <div class="table-responsive">
 
-                    <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
 
-                        <table class="table payment-table mb-0">
+                        <thead>
 
-                            <thead>
-                                <tr>
-                                    <th>Description</th>
-                                    <th>Qty</th>
-                                    <th>Unit Price</th>
-                                    <th>Total</th>
-                                </tr>
-                            </thead>
+                            <tr>
 
-                            <tbody>
+                                <th class="ps-4">
+                                    Description
+                                </th>
+
+                                <th>
+                                    Qty
+                                </th>
+
+                                <th>
+                                    Unit Price
+                                </th>
+
+                                <th class="text-end pe-4">
+                                    Total
+                                </th>
+
+                            </tr>
+
+                        </thead>
+
+
+                        <tbody>
 
                             {% for item in invoice.items %}
 
                             <tr>
-                                <td>
-                                    <strong>{{ item.description }}</strong>
+
+                                <td class="ps-4">
+
+                                    <div class="fw-semibold">
+                                        {{ item.description }}
+                                    </div>
+
                                 </td>
+
 
                                 <td>
                                     {{ item.quantity }}
                                 </td>
 
+
                                 <td>
-                                    ₨ {{ "{:,.2f}".format(item.unit_price) }}
+                                    ₨ {{ "{:,.2f}".format(item.unit_price or 0) }}
                                 </td>
 
-                                <td class="fw-bold">
-                                    ₨ {{ "{:,.2f}".format(item.total_price) }}
+
+                                <td class="text-end pe-4 fw-bold">
+
+                                    ₨ {{ "{:,.2f}".format(item.total_amount or 0) }}
+
                                 </td>
+
                             </tr>
 
                             {% endfor %}
 
-                            </tbody>
+                        </tbody>
 
-                        </table>
-
-                    </div>
+                    </table>
 
                 </div>
 
+                {% else %}
+
+                <div class="text-center py-5">
+
+                    <i class="bi bi-receipt fs-1 text-muted"></i>
+
+                    <p class="text-muted mt-3 mb-0">
+                        No invoice items recorded.
+                    </p>
+
+                </div>
+
+                {% endif %}
+
             </div>
 
+        </div>
 
-            <div class="col-lg-4">
 
-                <div class="card p-4 mb-4">
+        <!-- PAYMENT HISTORY -->
+        <div class="card">
 
-                    <span class="section-kicker">PAYMENT SUMMARY</span>
+            <div class="card-body p-4">
 
-                    <div class="summary-line">
-                        <span>Subtotal</span>
-                        <strong>₨ {{ "{:,.2f}".format(invoice.subtotal) }}</strong>
+                <div class="d-flex justify-content-between align-items-center mb-4">
+
+                    <div>
+
+                        <div class="small text-uppercase text-muted">
+                            Payment History
+                        </div>
+
+                        <h5 class="fw-bold mb-0">
+                            Recorded Payments
+                        </h5>
+
                     </div>
 
-                    <div class="summary-line">
-                        <span>Tax</span>
-                        <strong>₨ {{ "{:,.2f}".format(invoice.tax_amount) }}</strong>
+                    {% if invoice.payments %}
+
+                    <span class="badge bg-secondary-subtle text-secondary">
+                        {{ invoice.payments|length }} Payments
+                    </span>
+
+                    {% endif %}
+
+                </div>
+
+
+                {% if invoice.payments %}
+
+                    {% for payment in invoice.payments %}
+
+                    <div class="d-flex justify-content-between align-items-center
+                                py-3 border-bottom">
+
+                        <div class="d-flex align-items-center gap-3">
+
+                            <div class="rounded-3 d-flex align-items-center justify-content-center"
+                                 style="width:42px;height:42px;background:rgba(25,135,84,.10);color:#198754;">
+
+                                <i class="bi bi-credit-card"></i>
+
+                            </div>
+
+                            <div>
+
+                                <a href="{{ url_for(
+                                    'main.payment_details',
+                                    payment_id=payment.id
+                                ) }}"
+                                   class="fw-bold text-decoration-none">
+
+                                    {{ payment.payment_reference }}
+
+                                </a>
+
+                                <div class="small text-muted mt-1">
+
+                                    {{ payment.payment_method|replace('_', ' ')|title }}
+
+                                    ·
+
+                                    {{ payment.payment_date.strftime('%d %b %Y') }}
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="text-end">
+
+                            <div class="fw-bold text-success">
+
+                                ₨ {{ "{:,.2f}".format(payment.amount) }}
+
+                            </div>
+
+                            {% if payment.status == "completed" %}
+
+                                <small class="text-success">
+                                    Completed
+                                </small>
+
+                            {% elif payment.status == "refunded" %}
+
+                                <small class="text-danger">
+                                    Refunded
+                                </small>
+
+                            {% else %}
+
+                                <small class="text-warning">
+                                    {{ payment.status|title }}
+                                </small>
+
+                            {% endif %}
+
+                        </div>
+
                     </div>
 
-                    <div class="summary-line">
-                        <span>Discount</span>
-                        <strong>− ₨ {{ "{:,.2f}".format(invoice.discount_amount) }}</strong>
+                    {% endfor %}
+
+                {% else %}
+
+                    <div class="text-center py-4">
+
+                        <i class="bi bi-credit-card-2-front fs-2 text-muted"></i>
+
+                        <p class="text-muted mt-2 mb-0">
+                            No payments recorded.
+                        </p>
+
                     </div>
 
-                    <hr>
+                {% endif %}
 
-                    <div class="summary-line">
-                        <span>Total</span>
-                        <strong>
-                            ₨ {{ "{:,.2f}".format(invoice.total_amount) }}
-                        </strong>
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- FINANCIAL SUMMARY -->
+    <div class="col-xl-4">
+
+        <div class="card mb-4">
+
+            <div class="card-body p-4">
+
+                <div class="d-flex align-items-center gap-2 mb-4">
+
+                    <i class="bi bi-calculator text-warning fs-5"></i>
+
+                    <h5 class="fw-bold mb-0">
+                        Payment Summary
+                    </h5>
+
+                </div>
+
+
+                <div class="d-flex justify-content-between mb-3">
+
+                    <span class="text-muted">
+                        Subtotal
+                    </span>
+
+                    <strong>
+                        ₨ {{ "{:,.2f}".format(invoice.subtotal or 0) }}
+                    </strong>
+
+                </div>
+
+
+                <div class="d-flex justify-content-between mb-3">
+
+                    <span class="text-muted">
+                        Tax
+                    </span>
+
+                    <strong>
+                        ₨ {{ "{:,.2f}".format(invoice.tax_amount or 0) }}
+                    </strong>
+
+                </div>
+
+
+                <div class="d-flex justify-content-between mb-3">
+
+                    <span class="text-muted">
+                        Discount
+                    </span>
+
+                    <strong>
+                        − ₨ {{ "{:,.2f}".format(invoice.discount_amount or 0) }}
+                    </strong>
+
+                </div>
+
+
+                <hr>
+
+
+                <div class="d-flex justify-content-between align-items-center mb-3">
+
+                    <span class="fw-bold">
+                        Total
+                    </span>
+
+                    <span class="fs-4 fw-bold">
+                        ₨ {{ "{:,.2f}".format(invoice.total_amount or 0) }}
+                    </span>
+
+                </div>
+
+
+                <div class="d-flex justify-content-between mb-3 text-success">
+
+                    <span>
+                        Paid
+                    </span>
+
+                    <strong>
+                        ₨ {{ "{:,.2f}".format(invoice.paid_amount or 0) }}
+                    </strong>
+
+                </div>
+
+
+                <div class="d-flex justify-content-between text-danger">
+
+                    <span>
+                        Balance
+                    </span>
+
+                    <strong>
+                        ₨ {{ "{:,.2f}".format(invoice.balance_amount or 0) }}
+                    </strong>
+
+                </div>
+
+
+                {% if invoice.balance_amount > 0 %}
+
+                <a href="{{ url_for('main.add_payment') }}"
+                   class="btn btn-warning w-100 mt-4 fw-semibold">
+
+                    <i class="bi bi-credit-card me-1"></i>
+                    Add Payment
+
+                </a>
+
+                {% else %}
+
+                <div class="alert alert-success mt-4 mb-0">
+
+                    <i class="bi bi-check-circle me-1"></i>
+
+                    Invoice fully paid.
+
+                </div>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+
+        <!-- INVOICE STATUS -->
+        <div class="card mb-4">
+
+            <div class="card-body p-4">
+
+                <div class="small text-uppercase text-muted mb-3">
+                    Invoice Status
+                </div>
+
+
+                {% if invoice.status == "paid" %}
+
+                    <div class="d-flex align-items-center gap-3">
+
+                        <div class="rounded-circle d-flex align-items-center justify-content-center"
+                             style="width:46px;height:46px;background:rgba(25,135,84,.12);color:#198754;">
+
+                            <i class="bi bi-check-lg fs-5"></i>
+
+                        </div>
+
+                        <div>
+
+                            <div class="fw-bold">
+                                Fully Paid
+                            </div>
+
+                            <div class="small text-muted">
+                                No outstanding balance remains.
+                            </div>
+
+                        </div>
+
                     </div>
 
-                    <div class="summary-line text-success">
-                        <span>Paid</span>
-                        <strong>
-                            ₨ {{ "{:,.2f}".format(invoice.paid_amount) }}
-                        </strong>
+                {% elif invoice.status == "partial" %}
+
+                    <div class="d-flex align-items-center gap-3">
+
+                        <div class="rounded-circle d-flex align-items-center justify-content-center"
+                             style="width:46px;height:46px;background:rgba(255,193,7,.12);color:#ffc107;">
+
+                            <i class="bi bi-pie-chart fs-5"></i>
+
+                        </div>
+
+                        <div>
+
+                            <div class="fw-bold">
+                                Partially Paid
+                            </div>
+
+                            <div class="small text-muted">
+                                An outstanding balance remains.
+                            </div>
+
+                        </div>
+
                     </div>
 
-                    <div class="summary-line text-danger">
-                        <span>Balance</span>
-                        <strong>
-                            ₨ {{ "{:,.2f}".format(invoice.balance_amount) }}
-                        </strong>
+                {% else %}
+
+                    <div class="d-flex align-items-center gap-3">
+
+                        <div class="rounded-circle d-flex align-items-center justify-content-center"
+                             style="width:46px;height:46px;background:rgba(220,53,69,.12);color:#dc3545;">
+
+                            <i class="bi bi-exclamation-lg fs-5"></i>
+
+                        </div>
+
+                        <div>
+
+                            <div class="fw-bold">
+                                Unpaid
+                            </div>
+
+                            <div class="small text-muted">
+                                No completed payment has been recorded.
+                            </div>
+
+                        </div>
+
                     </div>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+
+        <!-- QUICK ACTIONS -->
+        <div class="card">
+
+            <div class="card-body p-4">
+
+                <div class="small text-uppercase text-muted mb-3">
+                    Quick Actions
+                </div>
+
+                <div class="d-grid gap-2">
 
                     {% if invoice.balance_amount > 0 %}
 
-                    <a
-                        href="{{ url_for('main.add_payment') }}"
-                        class="btn btn-primary w-100 mt-4"
-                    >
-                        + Add Payment
+                    <a href="{{ url_for('main.add_payment') }}"
+                       class="btn btn-outline-warning">
+
+                        <i class="bi bi-plus-circle me-1"></i>
+                        Record Payment
+
                     </a>
 
                     {% endif %}
 
-                </div>
+                    <a href="{{ url_for('main.invoices') }}"
+                       class="btn btn-outline-light">
 
+                        <i class="bi bi-list-ul me-1"></i>
+                        All Invoices
 
-                <div class="card p-4">
+                    </a>
 
-                    <span class="section-kicker">PAYMENT HISTORY</span>
+                    <a href="{{ url_for('main.payments') }}"
+                       class="btn btn-outline-light">
 
-                    {% if invoice.payments %}
+                        <i class="bi bi-credit-card me-1"></i>
+                        Payment Center
 
-                        {% for payment in invoice.payments %}
-
-                        <div class="border-bottom py-3">
-
-                            <div class="d-flex justify-content-between">
-                                <strong>
-                                    {{ payment.payment_reference }}
-                                </strong>
-
-                                <strong>
-                                    ₨ {{ "{:,.2f}".format(payment.amount) }}
-                                </strong>
-                            </div>
-
-                            <small class="text-muted">
-                                {{ payment.payment_method|replace('_', ' ')|title }}
-                                ·
-                                {{ payment.payment_date.strftime('%d %b %Y') }}
-                            </small>
-
-                        </div>
-
-                        {% endfor %}
-
-                    {% else %}
-
-                        <p class="text-muted mt-3 mb-0">
-                            No payments recorded.
-                        </p>
-
-                    {% endif %}
+                    </a>
 
                 </div>
 
@@ -279,25 +687,8 @@
 
         </div>
 
-    </main>
+    </div>
+
 </div>
 
-<style>
-.summary-line {
-    display: flex;
-    justify-content: space-between;
-    gap: 15px;
-    padding: 9px 0;
-}
-
-.summary-line span {
-    color: #64748b;
-}
-
-.summary-line strong {
-    color: #0f172a;
-}
-</style>
-
-</body>
-</html>
+{% endblock %}

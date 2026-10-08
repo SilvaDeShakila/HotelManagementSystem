@@ -1,0 +1,644 @@
+﻿{% extends "base.html" %}
+
+{% block title %}Reports & Analytics{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid py-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-1">
+                <i class="bi bi-bar-chart-line-fill me-2"></i>
+                Reports & Analytics
+            </h2>
+            <p class="text-muted mb-0">
+                Monitor hotel performance, revenue and bookings.
+            </p>
+        </div>
+    </div>
+
+
+    <!-- DATE FILTER -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+
+            <div class="row g-3 align-items-end">
+
+                <div class="col-md-3">
+                    <label for="period" class="form-label fw-semibold">
+                        Report Period
+                    </label>
+
+                    <select id="period"
+                            class="form-select"
+                            onchange="applyReportPeriod(this.value)">
+
+                        <option value="all"
+                            {% if period == "all" %}selected{% endif %}>
+                            All Time
+                        </option>
+
+                        <option value="today"
+                            {% if period == "today" %}selected{% endif %}>
+                            Today
+                        </option>
+
+                        <option value="week"
+                            {% if period == "week" %}selected{% endif %}>
+                            This Week
+                        </option>
+
+                        <option value="month"
+                            {% if period == "month" %}selected{% endif %}>
+                            This Month
+                        </option>
+
+                        <option value="custom"
+                            {% if period == "custom" %}selected{% endif %}>
+                            Custom Range
+                        </option>
+
+                    </select>
+                </div>
+
+
+                <form id="customReportForm"
+                      method="GET"
+                      action="{{ url_for('main.reports') }}"
+                      class="row g-3 col-md-9"
+                      style="{% if period != 'custom' %}display:none;{% endif %}">
+
+                    <input type="hidden"
+                           name="period"
+                           value="custom">
+
+                    <div class="col-md-4">
+
+                        <label for="start_date"
+                               class="form-label fw-semibold">
+                            Start Date
+                        </label>
+
+                        <input id="start_date"
+                               type="date"
+                               name="start_date"
+                               class="form-control"
+                               value="{{ request.args.get('start_date', '') }}">
+
+                    </div>
+
+
+                    <div class="col-md-4">
+
+                        <label for="end_date"
+                               class="form-label fw-semibold">
+                            End Date
+                        </label>
+
+                        <input id="end_date"
+                               type="date"
+                               name="end_date"
+                               class="form-control"
+                               value="{{ request.args.get('end_date', '') }}">
+
+                    </div>
+
+
+                    <div class="col-md-4">
+
+                        <button type="submit"
+                                class="btn btn-primary w-100">
+                            <i class="bi bi-funnel-fill me-2"></i>
+                            Apply Filter
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+        </div>
+    </div>
+
+
+    <!-- FINANCIAL SUMMARY -->
+    <div class="row g-4 mb-4">
+
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+
+                    <div class="text-muted small">
+                        Booking Revenue
+                    </div>
+
+                    <h3 class="fw-bold mt-2">
+                        Rs. {{ "{:,.2f}".format(total_revenue) }}
+                    </h3>
+
+                    <div class="text-success small mt-2">
+                        <i class="bi bi-graph-up-arrow"></i>
+                        Revenue
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+
+                    <div class="text-muted small">
+                        Payments Collected
+                    </div>
+
+                    <h3 class="fw-bold mt-2">
+                        Rs. {{ "{:,.2f}".format(total_paid) }}
+                    </h3>
+
+                    <div class="text-success small mt-2">
+                        <i class="bi bi-cash-stack"></i>
+                        Collected
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+
+                    <div class="text-muted small">
+                        Outstanding Balance
+                    </div>
+
+                    <h3 class="fw-bold mt-2">
+                        Rs. {{ "{:,.2f}".format(outstanding_balance) }}
+                    </h3>
+
+                    <div class="text-warning small mt-2">
+                        <i class="bi bi-exclamation-circle"></i>
+                        Pending
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+
+                    <div class="text-muted small">
+                        Refunded Amount
+                    </div>
+
+                    <h3 class="fw-bold mt-2">
+                        Rs. {{ "{:,.2f}".format(total_refunded) }}
+                    </h3>
+
+                    <div class="text-danger small mt-2">
+                        <i class="bi bi-arrow-counterclockwise"></i>
+                        Refunded
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+
+    <!-- ROOM OVERVIEW -->
+    <div class="card border-0 shadow-sm mb-4">
+
+        <div class="card-header bg-white border-0 pt-4">
+            <h5 class="fw-bold mb-0">
+                <i class="bi bi-door-open-fill me-2"></i>
+                Room Overview
+            </h5>
+        </div>
+
+        <div class="card-body">
+
+            <div class="row g-4 text-center">
+
+                <div class="col-md">
+                    <div class="p-3 rounded bg-light">
+                        <div class="text-muted small">Available</div>
+                        <h3 class="fw-bold text-success mb-0">
+                            {{ available_rooms }}
+                        </h3>
+                    </div>
+                </div>
+
+                <div class="col-md">
+                    <div class="p-3 rounded bg-light">
+                        <div class="text-muted small">Occupied</div>
+                        <h3 class="fw-bold text-danger mb-0">
+                            {{ occupied_rooms }}
+                        </h3>
+                    </div>
+                </div>
+
+                <div class="col-md">
+                    <div class="p-3 rounded bg-light">
+                        <div class="text-muted small">Cleaning</div>
+                        <h3 class="fw-bold text-warning mb-0">
+                            {{ cleaning_rooms }}
+                        </h3>
+                    </div>
+                </div>
+
+                <div class="col-md">
+                    <div class="p-3 rounded bg-light">
+                        <div class="text-muted small">Maintenance</div>
+                        <h3 class="fw-bold text-secondary mb-0">
+                            {{ maintenance_rooms }}
+                        </h3>
+                    </div>
+                </div>
+
+                <div class="col-md">
+                    <div class="p-3 rounded bg-light">
+                        <div class="text-muted small">Total Rooms</div>
+                        <h3 class="fw-bold mb-0">
+                            {{ total_rooms }}
+                        </h3>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+
+    <!-- BOOKING OVERVIEW -->
+    <div class="card border-0 shadow-sm mb-4">
+
+        <div class="card-header bg-white border-0 pt-4">
+            <h5 class="fw-bold mb-0">
+                <i class="bi bi-calendar-check-fill me-2"></i>
+                Booking Overview
+            </h5>
+        </div>
+
+        <div class="card-body">
+
+            <div class="row g-4 text-center">
+
+                <div class="col-md">
+                    <div class="p-3 rounded bg-light">
+                        <div class="text-muted small">Total</div>
+                        <h3 class="fw-bold mb-0">
+                            {{ total_bookings }}
+                        </h3>
+                    </div>
+                </div>
+
+                <div class="col-md">
+                    <div class="p-3 rounded bg-light">
+                        <div class="text-muted small">Active</div>
+                        <h3 class="fw-bold text-primary mb-0">
+                            {{ active_bookings }}
+                        </h3>
+                    </div>
+                </div>
+
+                <div class="col-md">
+                    <div class="p-3 rounded bg-light">
+                        <div class="text-muted small">Checked In</div>
+                        <h3 class="fw-bold text-success mb-0">
+                            {{ checked_in }}
+                        </h3>
+                    </div>
+                </div>
+
+                <div class="col-md">
+                    <div class="p-3 rounded bg-light">
+                        <div class="text-muted small">Checked Out</div>
+                        <h3 class="fw-bold text-info mb-0">
+                            {{ checked_out }}
+                        </h3>
+                    </div>
+                </div>
+
+                <div class="col-md">
+                    <div class="p-3 rounded bg-light">
+                        <div class="text-muted small">Cancelled</div>
+                        <h3 class="fw-bold text-danger mb-0">
+                            {{ cancelled_bookings }}
+                        </h3>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+
+    <!-- CHARTS -->
+    <div class="row g-4 mb-4">
+
+        <div class="col-xl-8">
+
+            <div class="card border-0 shadow-sm h-100">
+
+                <div class="card-header bg-white border-0 pt-4">
+                    <h5 class="fw-bold mb-0">
+                        <i class="bi bi-graph-up me-2"></i>
+                        Revenue Trend
+                    </h5>
+                </div>
+
+                <div class="card-body">
+                    <div style="height:320px;">
+                        <canvas id="revenueChart"></canvas>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="col-xl-4">
+
+            <div class="card border-0 shadow-sm h-100">
+
+                <div class="card-header bg-white border-0 pt-4">
+                    <h5 class="fw-bold mb-0">
+                        <i class="bi bi-pie-chart-fill me-2"></i>
+                        Room Status
+                    </h5>
+                </div>
+
+                <div class="card-body">
+                    <div style="height:320px;">
+                        <canvas id="roomStatusChart"></canvas>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="row g-4 mb-4">
+
+        <div class="col-xl-6">
+
+            <div class="card border-0 shadow-sm h-100">
+
+                <div class="card-header bg-white border-0 pt-4">
+                    <h5 class="fw-bold mb-0">
+                        <i class="bi bi-bar-chart-fill me-2"></i>
+                        Booking Status
+                    </h5>
+                </div>
+
+                <div class="card-body">
+                    <div style="height:320px;">
+                        <canvas id="bookingStatusChart"></canvas>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="col-xl-6">
+
+            <div class="card border-0 shadow-sm h-100">
+
+                <div class="card-header bg-white border-0 pt-4">
+                    <h5 class="fw-bold mb-0">
+                        <i class="bi bi-credit-card-fill me-2"></i>
+                        Payment Methods
+                    </h5>
+                </div>
+
+                <div class="card-body">
+                    <div style="height:320px;">
+                        <canvas id="paymentMethodChart"></canvas>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- OCCUPANCY -->
+    <div class="card border-0 shadow-sm mb-4">
+
+        <div class="card-body">
+
+            <div class="d-flex justify-content-between align-items-center mb-2">
+
+                <h5 class="fw-bold mb-0">
+                    <i class="bi bi-speedometer2 me-2"></i>
+                    Current Occupancy
+                </h5>
+
+                <span class="fw-bold">
+                    {{ occupancy_rate }}%
+                </span>
+
+            </div>
+
+            <div class="progress" style="height:12px;">
+
+                <div class="progress-bar"
+                     role="progressbar"
+                     style="width:{{ occupancy_rate }}%;"
+                     aria-valuenow="{{ occupancy_rate }}"
+                     aria-valuemin="0"
+                     aria-valuemax="100">
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
+
+
+{% block extra_js %}
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+
+<script>
+
+function applyReportPeriod(period) {
+
+    if (period === "custom") {
+
+        const form = document.getElementById("customReportForm");
+
+        if (form) {
+            form.style.display = "";
+        }
+
+        return;
+    }
+
+    window.location.href =
+        "{{ url_for('main.reports') }}?period=" +
+        encodeURIComponent(period);
+}
+
+
+document.addEventListener("DOMContentLoaded", function() {
+
+
+    /* Revenue Trend */
+
+    const revenueData = {{ revenue_chart | tojson }};
+
+    new Chart(
+        document.getElementById("revenueChart"),
+        {
+            type: "line",
+
+            data: {
+                labels: revenueData.map(item => item.date),
+
+                datasets: [{
+                    label: "Revenue (Rs.)",
+                    data: revenueData.map(item => item.revenue),
+                    tension: 0.35,
+                    fill: true
+                }]
+            },
+
+            options: {
+                responsive: true,
+                maintainAspectRatio: false
+            }
+        }
+    );
+
+
+    /* Booking Status */
+
+    const bookingData = {{ booking_status_data | tojson }};
+
+    new Chart(
+        document.getElementById("bookingStatusChart"),
+        {
+            type: "bar",
+
+            data: {
+                labels: bookingData.map(item => item.label),
+
+                datasets: [{
+                    label: "Bookings",
+                    data: bookingData.map(item => item.value)
+                }]
+            },
+
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0
+                        }
+                    }
+                }
+            }
+        }
+    );
+
+
+    /* Room Status */
+
+    new Chart(
+        document.getElementById("roomStatusChart"),
+        {
+            type: "doughnut",
+
+            data: {
+                labels: [
+                    "Available",
+                    "Occupied",
+                    "Cleaning",
+                    "Maintenance"
+                ],
+
+                datasets: [{
+                    data: [
+                        {{ available_rooms }},
+                        {{ occupied_rooms }},
+                        {{ cleaning_rooms }},
+                        {{ maintenance_rooms }}
+                    ]
+                }]
+            },
+
+            options: {
+                responsive: true,
+                maintainAspectRatio: false
+            }
+        }
+    );
+
+
+    /* Payment Methods */
+
+    const paymentData = {{ payment_method_chart | tojson }};
+
+    new Chart(
+        document.getElementById("paymentMethodChart"),
+        {
+            type: "bar",
+
+            data: {
+                labels: paymentData.map(item => item.label),
+
+                datasets: [{
+                    label: "Amount (Rs.)",
+                    data: paymentData.map(item => item.value)
+                }]
+            },
+
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        }
+    );
+
+});
+
+</script>
+
+{% endblock %}

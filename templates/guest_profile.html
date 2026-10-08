@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>{{ guest.name }} | Guest Profile</title>
+
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
+
+    <link
+        rel="stylesheet"
+       href="{{ url_for('static', filename='css/premium.css') }}"
+    >
+
+    <style>
+        .guest-profile-page {
+            min-height: 100vh;
+            background: #f4f6fa;
+        }
+
+        .guest-profile-layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .guest-profile-main {
+            flex: 1;
+            min-width: 0;
+            padding: 30px 34px;
+        }
+
+        .guest-profile-hero {
+            position: relative;
+            overflow: hidden;
+            padding: 30px;
+            margin-bottom: 24px;
+            border-radius: 22px;
+            background:
+                linear-gradient(
+                    135deg,
+                    #0b1120 0%,
+                    #151f35 55%,
+                    #202d47 100%
+                );
+            color: #fff;
+            box-shadow: 0 16px 40px rgba(15, 23, 42, 0.18);
+        }
+
+        .guest-profile-hero::after {
+            content: "";
+            position: absolute;
+            width: 260px;
+            height: 260px;
+            right: -90px;
+            top: -110px;
+            border-radius: 50%;
+            background: rgba(201, 162, 39, 0.16);
+        }
+
+        .guest-profile-hero-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .guest-avatar-large {
+            width: 76px;
+            height: 76px;
+            border-radius: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(
+                135deg,
+                #c9a227,
+                #e7cf73
+            );
+            color: #0b1120;
+            font-size: 28px;
+            font-weight: 800;
+            box-shadow: 0 10px 25px rgba(201, 162, 39, 0.28);
+        }
+
+        .guest-hero-title {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+
+        .guest-hero-subtitle {
+            margin: 5px 0 0;
+            color: rgba(255, 255, 255, 0.68);
+            font-size: 14px;
+        }
+
+        .guest-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 7px 12px;
+            border-radius: 999px;
+            background: rgba(34, 197, 94, 0.14);
+            color: #86efac;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .guest-status-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #22c55e;
+        }
+
+        .guest-stat-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 18px;
+            margin-bottom: 24px;
+        }
+
+        .guest-stat-card {
+            background: #fff;
+            border-radius: 18px;
+            padding: 22px;
+            border: 1px solid #e7eaf0;
+            box-shadow: 0 10px 28px rgba(15, 23, 42, 0.06);
+        }
+
+        .guest-stat-label {
+            color: #7a8496;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.7px;
+            margin-bottom: 8px;
+        }
+
+        .guest-stat-value {
+            color: #111827;
+            font-size: 26px;
+            font-weight: 800;
+        }
+
+        .guest-content-grid {
+            display: grid;
+            grid-template-columns: 340px minmax(0, 1fr);
+            gap: 24px;
+            align-items: start;
+        }
+
+        .guest-card {
+            background: #fff;
+            border: 1px solid #e7eaf0;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+            overflow: hidden;
+        }
+
+        .guest-card-header {
+            padding: 20px 22px;
+            border-bottom: 1px solid #edf0f4;
+        }
+
+        .guest-card-title {
+            margin: 0;
+            color: #111827;
+            font-size: 16px;
+            font-weight: 800;
+        }
+
+        .guest-card-subtitle {
+            margin: 4px 0 0;
+            color: #8a93a3;
+            font-size: 12px;
+        }
+
+        .guest-card-body {
+            padding: 22px;
+        }
+
+        .profile-avatar-wrapper {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 18px;
+        }
+
+        .profile-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(
+                135deg,
+                #0b1120,
+                #263653
+            );
+            color: #e7cf73;
+            font-size: 34px;
+            font-weight: 800;
+            box-shadow: 0 12px 30px rgba(15, 23, 42, 0.18);
+        }
+
+        .profile-name {
+            text-align: center;
+            margin-bottom: 3px;
+            font-size: 21px;
+            font-weight: 800;
+            color: #111827;
+        }
+
+        .profile-role {
+            text-align: center;
+            color: #8a93a3;
+            font-size: 13px;
+            margin-bottom: 24px;
+        }
+
+        .profile-info-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 13px 0;
+            border-bottom: 1px solid #eef1f5;
+        }
+
+        .profile-info-item:last-child {
+            border-bottom: none;
+        }
+
+        .profile-info-icon {
+            width: 34px;
+            height: 34px;
+            flex: 0 0 34px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f5f7fa;
+            color: #c9a227;
+            font-size: 14px;
+            font-weight: 800;
+        }
+
+        .profile-info-label {
+            color: #8a93a3;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .profile-info-value {
+            margin-top: 2px;
+            color: #202938;
+            font-size: 14px;
+            font-weight: 600;
+            word-break: break-word;
+        }
+
+        .booking-table-wrapper {
+            overflow-x: auto;
+        }
+
+        .booking-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 760px;
+        }
+
+        .booking-table th {
+            padding: 14px 18px;
+            text-align: left;
+            background: #f8f9fb;
+            color: #7a8496;
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.55px;
+            border-bottom: 1px solid #e9edf2;
+        }
+
+        .booking-table td {
+            padding: 17px 18px;
+            border-bottom: 1px solid #edf0f4;
+            color: #374151;
+            font-size: 13px;
+            vertical-align: middle;
+        }
+
+        .booking-table tbody tr {
+            transition: 0.2s ease;
+        }
+
+        .booking-table tbody tr:hover {
+            background: #fafbfc;
+        }
+
+        .booking-reference {
+            color: #172033;
+            font-weight: 800;
+        }
+
+        .room-number {
+            font-weight: 700;
+            color: #374151;
+        }
+
+        .date-main {
+            font-weight: 700;
+            color: #374151;
+        }
+
+        .date-sub {
+            margin-top: 2px;
+            color: #9aa2b1;
+            font-size: 11px;
+        }
+
+        .booking-amount {
+            font-weight: 800;
+            color: #111827;
+            white-space: nowrap;
+        }
+
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 6px 10px;
+            border-radius: 999px;
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.35px;
+            white-space: nowrap;
+        }
+
+        .status-reservation {
+            background: #fff7d6;
+            color: #9a7400;
+        }
+
+        .status-confirmed {
+            background: #e0f2fe;
+            color: #0369a1;
+        }
+
+        .status-checked-in {
+            background: #dcfce7;
+            color: #15803d;
+        }
+
+        .status-checked-out {
+            background: #eef2f7;
+            color: #475569;
+        }
+
+        .status-cancelled {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+        .status-default {
+            background: #f1f5f9;
+            color: #475569;
+        }
+
+        .empty-bookings {
+            padding: 60px 20px;
+            text-align: center;
+        }
+
+        .empty-bookings-icon {
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 16px;
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f5f7fa;
+            color: #c9a227;
+            font-size: 25px;
+        }
+
+        .empty-bookings h4 {
+            margin: 0 0 6px;
+            font-size: 16px;
+            font-weight: 800;
+            color: #202938;
+        }
+
+        .empty-bookings p {
+            margin: 0;
+            color: #8a93a3;
+            font-size: 13px;
+        }
+
+        .back-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            padding: 10px 15px;
+            border-radius: 11px;
+            background: rgba(255, 255, 255, 0.09);
+            border: 1px solid rgba(255, 255, 255, 0.13);
+            color: #fff;
+            font-size: 12px;
+            font-weight: 700;
+            transition: 0.2s ease;
+        }
+
+        .back-button:hover {
+            background: rgba(255, 255, 255, 0.16);
+            color: #fff;
+            transform: translateY(-1px);
+        }
+
+        @media (max-width: 1100px) {
+            .guest-content-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .guest-stat-grid {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 800px) {
+            .guest-profile-main {
+                padding: 22px;
+            }
+
+            .guest-stat-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .guest-profile-hero {
+                padding: 24px;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .guest-profile-main {
+                padding: 16px;
+            }
+
+            .guest-profile-hero {
+                padding: 20px;
+                border-radius: 18px;
+            }
+
+            .guest-hero-title {
+                font-size: 23px;
+            }
+
+            .guest-avatar-large {
+                width: 62px;
+                height: 62px;
+                border-radius: 18px;
+                font-size: 23px;
+            }
+        }
+    </style>
+</head>
+
+<body class="guest-profile-page">
+
+<div class="guest-profile-layout">
+
+    {% include "_sidebar.html" ignore missing %}
+
+    <main class="guest-profile-main">
+
+        <!-- Hero -->
+        <section class="guest-profile-hero">
+
+            <div class="guest-profile-hero-content">
+
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+
+                    <div class="d-flex align-items-center gap-3">
+
+                        <div class="guest-avatar-large">
+                            {{ guest.name[:1].upper() }}
+                        </div>
+
+                        <div>
+                            <h1 class="guest-hero-title">
+                                {{ guest.name }}
+                            </h1>
+
+                            <p class="guest-hero-subtitle">
+                                Guest Profile & Booking History
+                            </p>
+
+                            <div class="mt-2">
+                                <span class="guest-status">
+                                    <span class="guest-status-dot"></span>
+                                    Active Guest
+                                </span>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <a
+                        href="{{ url_for('main.bookings') }}"
+                        class="back-button"
+                    >
+                        ← Back to Guests
+                    </a>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- Statistics -->
+        <section class="guest-stat-grid">
+
+            <div class="guest-stat-card">
+                <div class="guest-stat-label">
+                    Total Bookings
+                </div>
+
+                <div class="guest-stat-value">
+                    {{ bookings|length }}
+                </div>
+            </div>
+
+
+            <div class="guest-stat-card">
+
+                <div class="guest-stat-label">
+                    Total Booking Value
+                </div>
+
+                <div class="guest-stat-value">
+                    ₨ {{ "{:,.2f}".format(bookings|sum(attribute='total_amount')) }}
+                </div>
+
+            </div>
+
+
+            <div class="guest-stat-card">
+
+                <div class="guest-stat-label">
+                    Guest ID
+                </div>
+
+                <div class="guest-stat-value">
+                    #{{ guest.id }}
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- Main Content -->
+        <section class="guest-content-grid">
+
+
+            <!-- Guest Information -->
+            <div class="guest-card">
+
+                <div class="guest-card-header">
+
+                    <h2 class="guest-card-title">
+                        Guest Information
+                    </h2>
+
+                    <p class="guest-card-subtitle">
+                        Personal account details
+                    </p>
+
+                </div>
+
+
+                <div class="guest-card-body">
+
+                    <div class="profile-avatar-wrapper">
+
+                        <div class="profile-avatar">
+                            {{ guest.name[:1].upper() }}
+                        </div>
+
+                    </div>
+
+
+                    <div class="profile-name">
+                        {{ guest.name }}
+                    </div>
+
+                    <div class="profile-role">
+                        Customer / Guest
+                    </div>
+
+
+                    <div class="profile-info-item">
+
+                        <div class="profile-info-icon">
+                            @
+                        </div>
+
+                        <div>
+                            <div class="profile-info-label">
+                                Email Address
+                            </div>
+
+                            <div class="profile-info-value">
+                                {{ guest.email }}
+                            </div>
+                        </div>
+
+                    </div>
+
+
+                    <div class="profile-info-item">
+
+                        <div class="profile-info-icon">
+                            ID
+                        </div>
+
+                        <div>
+                            <div class="profile-info-label">
+                                Guest ID
+                            </div>
+
+                            <div class="profile-info-value">
+                                #{{ guest.id }}
+                            </div>
+                        </div>
+
+                    </div>
+
+
+                    <div class="profile-info-item">
+
+                        <div class="profile-info-icon">
+                            ✓
+                        </div>
+
+                        <div>
+                            <div class="profile-info-label">
+                                Account Status
+                            </div>
+
+                            <div class="profile-info-value">
+                                Active
+                            </div>
+                        </div>
+
+                    </div>
+
+
+                    <div class="profile-info-item">
+
+                        <div class="profile-info-icon">
+                            ★
+                        </div>
+
+                        <div>
+                            <div class="profile-info-label">
+                                Account Role
+                            </div>
+
+                            <div class="profile-info-value">
+                                {{ guest.role|capitalize }}
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- Booking History -->
+            <div class="guest-card">
+
+                <div class="guest-card-header">
+
+                    <h2 class="guest-card-title">
+                        Booking History
+                    </h2>
+
+                    <p class="guest-card-subtitle">
+                        All reservations associated with this guest
+                    </p>
+
+                </div>
+
+
+                {% if bookings %}
+
+                <div class="booking-table-wrapper">
+
+                    <table class="booking-table">
+
+                        <thead>
+                            <tr>
+                                <th>Booking</th>
+                                <th>Room</th>
+                                <th>Stay</th>
+                                <th>Guests</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+
+
+                        <tbody>
+
+                        {% for booking in bookings %}
+
+                            <tr>
+
+                                <td>
+                                    <div class="booking-reference">
+                                        {{ booking.booking_reference }}
+                                    </div>
+                                </td>
+
+
+                                <td>
+                                    <div class="room-number">
+                                        Room {{ booking.room.room_number }}
+                                    </div>
+
+                                    <div class="date-sub">
+                                        {{ booking.room.room_type }}
+                                    </div>
+                                </td>
+
+
+                                <td>
+
+                                    <div class="date-main">
+                                        {{ booking.check_in.strftime('%d %b %Y') }}
+                                    </div>
+
+                                    <div class="date-sub">
+                                        to {{ booking.check_out.strftime('%d %b %Y') }}
+                                    </div>
+
+                                </td>
+
+
+                                <td>
+                                    {{ booking.guests }}
+                                </td>
+
+
+                                <td>
+
+                                    <div class="booking-amount">
+                                        ₨ {{ "{:,.2f}".format(booking.total_amount or 0) }}
+                                    </div>
+
+                                </td>
+
+
+                                <td>
+
+                                    {% set status_class = {
+                                        'reservation': 'status-reservation',
+                                        'confirmed': 'status-confirmed',
+                                        'checked-in': 'status-checked-in',
+                                        'checked-out': 'status-checked-out',
+                                        'cancelled': 'status-cancelled'
+                                    }.get(booking.status, 'status-default') %}
+
+                                    <span class="status-pill {{ status_class }}">
+                                        {{ booking.status|replace('-', ' ') }}
+                                    </span>
+
+                                </td>
+
+                            </tr>
+
+                        {% endfor %}
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+                {% else %}
+
+                <div class="empty-bookings">
+
+                    <div class="empty-bookings-icon">
+                        📋
+                    </div>
+
+                    <h4>
+                        No Booking History
+                    </h4>
+
+                    <p>
+                        This guest has not made any bookings yet.
+                    </p>
+
+                </div>
+
+                {% endif %}
+
+            </div>
+
+        </section>
+
+    </main>
+
+</div>
+
+</body>
+</html>

@@ -63,52 +63,24 @@ def staff_required(view):
 @main.route("/")
 @login_required
 def index():
-    # Customer dashboard: show only personal information.
-    if current_user.role == "customer":
-        customer_bookings = Booking.query.filter_by(
-            user_id=current_user.id
-        ).order_by(
-            Booking.id.desc()
-        ).all()
 
-        upcoming_bookings = [
-            booking for booking in customer_bookings
-            if booking.status not in ["cancelled", "checked-out"]
-            and booking.check_in >= datetime.now().date()
-        ]
-
-        active_booking = upcoming_bookings[0] if upcoming_bookings else None
-
-        customer_invoices = Invoice.query.join(
-            Booking,
-            Invoice.booking_id == Booking.id
-        ).filter(
-            Booking.user_id == current_user.id
-        ).order_by(
-            Invoice.id.desc()
-        ).all()
-
-        outstanding_balance = round(
-            sum(float(invoice.balance_amount or 0) for invoice in customer_invoices),
-            2
-        )
-
-        return render_template(
-            "dashboard.html",
-            customer_bookings=customer_bookings,
-            upcoming_bookings=upcoming_bookings,
-            active_booking=active_booking,
-            customer_invoices=customer_invoices,
-            outstanding_balance=outstanding_balance,
-            is_customer_dashboard=True
-        )
-
-    # Staff/Admin dashboard: hotel-wide operational information.
     total_rooms = Room.query.count()
-    available_rooms = Room.query.filter_by(status="available").count()
-    occupied_rooms = Room.query.filter_by(status="occupied").count()
-    cleaning_rooms = Room.query.filter_by(status="cleaning").count()
-    maintenance_rooms = Room.query.filter_by(status="maintenance").count()
+
+    available_rooms = Room.query.filter_by(
+        status="available"
+    ).count()
+
+    occupied_rooms = Room.query.filter_by(
+        status="occupied"
+    ).count()
+
+    cleaning_rooms = Room.query.filter_by(
+        status="cleaning"
+    ).count()
+
+    maintenance_rooms = Room.query.filter_by(
+        status="maintenance"
+    ).count()
 
     total_bookings = Booking.query.count()
 
@@ -121,7 +93,10 @@ def index():
     ).count()
 
     total_revenue = db.session.query(
-        db.func.coalesce(db.func.sum(Booking.total_amount), 0)
+        db.func.coalesce(
+            db.func.sum(Booking.total_amount),
+            0
+        )
     ).filter(
         Booking.status != "cancelled"
     ).scalar()
@@ -130,10 +105,13 @@ def index():
         Booking.id.desc()
     ).limit(5).all()
 
-    occupancy_rate = (
-        round((occupied_rooms / total_rooms) * 100, 1)
-        if total_rooms > 0 else 0
-    )
+    if total_rooms > 0:
+        occupancy_rate = round(
+            (occupied_rooms / total_rooms) * 100,
+            1
+        )
+    else:
+        occupancy_rate = 0
 
     return render_template(
         "dashboard.html",
@@ -147,10 +125,272 @@ def index():
         total_customers=total_customers,
         total_revenue=total_revenue,
         occupancy_rate=occupancy_rate,
-        recent_bookings=recent_bookings,
-        is_customer_dashboard=False
+        recent_bookings=recent_bookings
     )
 
+
+# =========================================================
+# GUEST MANAGEMENT
+# =========================================================
+
+@main.route("/guests")
+@staff_required
+def guests():
+
+    guests = User.query.filter_by(
+        role="customer"
+    ).order_by(
+        User.name.asc()
+    ).all()
+
+    return render_template(
+        "guests.html",
+        guests=guests
+    )
+
+
+@main.route("/guests/<int:guest_id>")
+@staff_required
+def guest_profile(guest_id):
+
+    guest = db.session.get(User, guest_id)
+
+    if not guest or guest.role != "customer":
+        flash("Guest not found.", "danger")
+        return redirect(url_for("main.guests"))
+
+    bookings = Booking.query.filter_by(
+        user_id=guest.id
+    ).order_by(
+        Booking.id.desc()
+    ).all()
+
+    return render_template(
+        "guest_profile.html",
+        guest=guest,
+        bookings=bookings
+    )
+
+
+@main.route("/guests/add", methods=["GET", "POST"])
+@staff_required
+def add_guest():
+
+    if request.method == "POST":
+
+        name = request.form.get("name", "").strip()
+        email = request.form.get("email", "").strip().lower()
+        password = request.form.get("password", "")
+
+        if not name or not email or not password:
+            flash("Please fill in all fields.", "danger")
+            return redirect(url_for("main.add_guest"))
+
+        existing_guest = User.query.filter_by(
+            email=email
+        ).first()
+
+        if existing_guest:
+            flash(
+                "A user with this email already exists.",
+                "warning"
+            )
+            return redirect(url_for("main.add_guest"))
+
+        guest = User(
+            name=name,
+            email=email,
+            role="customer"
+        )
+
+        guest.set_password(password)
+
+        db.session.add(guest)
+        db.session.commit()
+
+        flash(
+            "Guest added successfully.",
+            "success"
+        )
+
+        return redirect(
+            url_for(
+                "main.guest_profile",
+                guest_id=guest.id
+            )
+        )
+
+    return render_template(
+        "add_guest.html"
+    )
+
+
+@main.route(
+    "/guests/<int:guest_id>/edit",
+    methods=["GET", "POST"]
+)
+@staff_required
+def edit_guest(guest_id):
+
+    guest = db.session.get(
+        User,
+        guest_id
+    )
+
+    if not guest or guest.role != "customer":
+        flash(
+            "Guest not found.",
+            "danger"
+        )
+        return redirect(
+            url_for("main.guests")
+        )
+
+    if request.method == "POST":
+
+        name = request.form.get(
+            "name",
+            ""
+        ).strip()
+
+        email = request.form.get(
+            "email",
+            ""
+        ).strip().lower()
+
+        password = request.form.get(
+            "password",
+            ""
+        )
+
+        if not name or not email:
+            flash(
+                "Name and email are required.",
+                "danger"
+            )
+            return redirect(
+                url_for(
+                    "main.edit_guest",
+                    guest_id=guest.id
+                )
+            )
+
+        existing_user = User.query.filter(
+            User.email == email,
+            User.id != guest.id
+        ).first()
+
+        if existing_user:
+            flash(
+                "A user with this email already exists.",
+                "warning"
+            )
+            return redirect(
+                url_for(
+                    "main.edit_guest",
+                    guest_id=guest.id
+                )
+            )
+
+        guest.name = name
+        guest.email = email
+
+        if password:
+            guest.set_password(password)
+
+        db.session.commit()
+
+        flash(
+            "Guest details updated successfully.",
+            "success"
+        )
+
+        return redirect(
+            url_for(
+                "main.guest_profile",
+                guest_id=guest.id
+            )
+        )
+
+    return render_template(
+        "edit_guest.html",
+        guest=guest
+    )
+
+
+@main.route(
+    "/guests/<int:guest_id>/deactivate",
+    methods=["POST"]
+)
+@admin_required
+def deactivate_guest(guest_id):
+
+    guest = db.session.get(
+        User,
+        guest_id
+    )
+
+    if not guest or guest.role != "customer":
+        flash(
+            "Guest not found.",
+            "danger"
+        )
+        return redirect(
+            url_for("main.guests")
+        )
+
+    guest.is_active = False
+
+    db.session.commit()
+
+    flash(
+        "Guest account deactivated successfully.",
+        "success"
+    )
+
+    return redirect(
+        url_for("main.guests")
+    )
+
+
+@main.route(
+    "/guests/<int:guest_id>/reactivate",
+    methods=["POST"]
+)
+@admin_required
+def reactivate_guest(guest_id):
+
+    guest = db.session.get(
+        User,
+        guest_id
+    )
+
+    if not guest or guest.role != "customer":
+        flash(
+            "Guest not found.",
+            "danger"
+        )
+        return redirect(
+            url_for("main.guests")
+        )
+
+    guest.is_active = True
+
+    db.session.commit()
+
+    flash(
+        "Guest account reactivated successfully.",
+        "success"
+    )
+
+    return redirect(
+        url_for("main.guests")
+    )
+
+
+# =========================================================
+# ROOM MANAGEMENT
+# =========================================================
 
 @main.route("/rooms")
 @login_required
@@ -1202,309 +1442,6 @@ def update_invoice_balance(invoice):
 
 
 # =========================================================
-# REPORTS / ANALYTICS
-# =========================================================
-
-@main.route("/reports")
-@staff_required
-def reports():
-
-    from datetime import date, timedelta
-
-    # ---------------------------------------------------------
-    # Date filter
-    # ---------------------------------------------------------
-    period = request.args.get("period", "all")
-    today = date.today()
-
-    start_date = None
-    end_date = today
-
-    if period == "today":
-        start_date = today
-
-    elif period == "week":
-        start_date = today - timedelta(days=today.weekday())
-
-    elif period == "month":
-        start_date = today.replace(day=1)
-
-    elif period == "custom":
-        custom_start = request.args.get("start_date")
-        custom_end = request.args.get("end_date")
-
-        if custom_start:
-            try:
-                start_date = datetime.strptime(
-                    custom_start, "%Y-%m-%d"
-                ).date()
-            except ValueError:
-                start_date = None
-
-        if custom_end:
-            try:
-                end_date = datetime.strptime(
-                    custom_end, "%Y-%m-%d"
-                ).date()
-            except ValueError:
-                end_date = today
-
-    # ---------------------------------------------------------
-    # Base booking query
-    # ---------------------------------------------------------
-    booking_query = Booking.query
-
-    if start_date:
-        booking_query = booking_query.filter(
-            Booking.check_in >= start_date
-        )
-
-    if end_date:
-        booking_query = booking_query.filter(
-            Booking.check_in <= end_date
-        )
-
-    bookings = booking_query.all()
-
-    total_bookings = len(bookings)
-
-    active_bookings = sum(
-        1 for booking in bookings
-        if booking.status not in ["cancelled", "checked-out"]
-    )
-
-    checked_in = sum(
-        1 for booking in bookings
-        if booking.status == "checked-in"
-    )
-
-    checked_out = sum(
-        1 for booking in bookings
-        if booking.status == "checked-out"
-    )
-
-    cancelled_bookings = sum(
-        1 for booking in bookings
-        if booking.status == "cancelled"
-    )
-
-    total_revenue = sum(
-        booking.total_amount or 0
-        for booking in bookings
-        if booking.status != "cancelled"
-    )
-
-    # ---------------------------------------------------------
-    # Payments
-    # ---------------------------------------------------------
-    payment_query = Payment.query.filter(
-        Payment.status == "completed"
-    )
-
-    if start_date:
-        payment_query = payment_query.filter(
-            Payment.payment_date >= datetime.combine(
-                start_date,
-                datetime.min.time()
-            )
-        )
-
-    if end_date:
-        payment_query = payment_query.filter(
-            Payment.payment_date <= datetime.combine(
-                end_date,
-                datetime.max.time()
-            )
-        )
-
-    payments = payment_query.all()
-
-    total_paid = sum(
-        payment.amount or 0
-        for payment in payments
-    )
-
-    # ---------------------------------------------------------
-    # Refunded payments
-    # ---------------------------------------------------------
-    refund_query = Payment.query.filter_by(
-        status="refunded"
-    )
-
-    if start_date:
-        refund_query = refund_query.filter(
-            Payment.payment_date >= datetime.combine(
-                start_date,
-                datetime.min.time()
-            )
-        )
-
-    if end_date:
-        refund_query = refund_query.filter(
-            Payment.payment_date <= datetime.combine(
-                end_date,
-                datetime.max.time()
-            )
-        )
-
-    refunded_payments = refund_query.all()
-
-    total_refunded = sum(
-        payment.amount or 0
-        for payment in refunded_payments
-    )
-
-    # ---------------------------------------------------------
-    # Outstanding balance
-    # ---------------------------------------------------------
-    outstanding_balance = db.session.query(
-        db.func.coalesce(
-            db.func.sum(Invoice.balance_amount),
-            0
-        )
-    ).filter(
-        Invoice.balance_amount > 0
-    ).scalar()
-
-    # ---------------------------------------------------------
-    # Room statistics
-    # ---------------------------------------------------------
-    total_rooms = Room.query.count()
-
-    available_rooms = Room.query.filter_by(
-        status="available"
-    ).count()
-
-    occupied_rooms = Room.query.filter_by(
-        status="occupied"
-    ).count()
-
-    cleaning_rooms = Room.query.filter_by(
-        status="cleaning"
-    ).count()
-
-    maintenance_rooms = Room.query.filter_by(
-        status="maintenance"
-    ).count()
-
-    occupancy_rate = (
-        round(
-            (occupied_rooms / total_rooms) * 100,
-            1
-        )
-        if total_rooms > 0
-        else 0
-    )
-
-    # ---------------------------------------------------------
-    # Booking status graph data
-    # ---------------------------------------------------------
-    booking_status_data = [
-        {
-            "label": "Reservation",
-            "value": sum(
-                1 for booking in bookings
-                if booking.status == "reservation"
-            )
-        },
-        {
-            "label": "Confirmed",
-            "value": sum(
-                1 for booking in bookings
-                if booking.status == "confirmed"
-            )
-        },
-        {
-            "label": "Checked In",
-            "value": checked_in
-        },
-        {
-            "label": "Checked Out",
-            "value": checked_out
-        },
-        {
-            "label": "Cancelled",
-            "value": cancelled_bookings
-        }
-    ]
-
-    # ---------------------------------------------------------
-    # Payment method graph data
-    # ---------------------------------------------------------
-    payment_method_data = {}
-
-    for payment in payments:
-        method = (payment.payment_method or "Other").title()
-        payment_method_data[method] = (
-            payment_method_data.get(method, 0)
-            + (payment.amount or 0)
-        )
-
-    payment_method_chart = [
-        {
-            "label": method,
-            "value": amount
-        }
-        for method, amount in payment_method_data.items()
-    ]
-
-    # ---------------------------------------------------------
-    # Revenue trend data
-    # ---------------------------------------------------------
-    revenue_by_date = {}
-
-    for booking in bookings:
-        if booking.status == "cancelled":
-            continue
-
-        booking_date = booking.check_in.strftime("%Y-%m-%d")
-
-        revenue_by_date[booking_date] = (
-            revenue_by_date.get(booking_date, 0)
-            + (booking.total_amount or 0)
-        )
-
-    revenue_chart = [
-        {
-            "date": booking_date,
-            "revenue": revenue
-        }
-        for booking_date, revenue
-        in sorted(revenue_by_date.items())
-    ]
-
-    return render_template(
-        "reports.html",
-        period=period,
-        start_date=start_date,
-        end_date=end_date,
-
-        total_rooms=total_rooms,
-        available_rooms=available_rooms,
-        occupied_rooms=occupied_rooms,
-        cleaning_rooms=cleaning_rooms,
-        maintenance_rooms=maintenance_rooms,
-
-        total_bookings=total_bookings,
-        active_bookings=active_bookings,
-        checked_in=checked_in,
-        checked_out=checked_out,
-        cancelled_bookings=cancelled_bookings,
-
-        total_revenue=total_revenue,
-        total_paid=total_paid,
-        total_refunded=total_refunded,
-        outstanding_balance=outstanding_balance,
-
-        occupancy_rate=occupancy_rate,
-
-        booking_status_data=booking_status_data,
-        payment_method_chart=payment_method_chart,
-        revenue_chart=revenue_chart
-    )
-
-
-# =========================================================
 # PAYMENTS
 # =========================================================
 
@@ -1928,7 +1865,7 @@ def my_payments():
         ).all()
 
     return render_template(
-         "my_payments.html",
+        "payments.html",
         total_revenue=0,
         today_revenue=0,
         pending_payments=0,

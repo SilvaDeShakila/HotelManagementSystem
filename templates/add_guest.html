@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Add Guest - HotelSuite</title>
+
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
+
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"
+        rel="stylesheet"
+    >
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/premium.css') }}"
+    >
+
+    <style>
+        .guest-form-wrapper {
+            max-width: 850px;
+            margin: 0 auto;
+        }
+
+        .guest-form-card {
+            border: 0;
+            border-radius: 22px;
+            overflow: hidden;
+            box-shadow: 0 15px 45px rgba(15, 23, 42, 0.10);
+        }
+
+        .guest-form-header {
+            background: linear-gradient(
+                135deg,
+                #0b1120,
+                #172554
+            );
+            color: white;
+            padding: 32px;
+        }
+
+        .guest-form-header .icon-box {
+            width: 58px;
+            height: 58px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(201, 162, 39, 0.15);
+            color: #e7cf73;
+            font-size: 25px;
+            margin-bottom: 18px;
+        }
+
+        .guest-form-body {
+            padding: 35px;
+            background: #ffffff;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .form-control {
+            min-height: 48px;
+            border-radius: 12px;
+            border: 1px solid #dbe2ea;
+        }
+
+        .form-control:focus {
+            border-color: #c9a227;
+            box-shadow: 0 0 0 0.2rem rgba(201, 162, 39, 0.15);
+        }
+
+        .password-note {
+            font-size: 13px;
+            color: #64748b;
+            margin-top: 7px;
+        }
+
+        .required-star {
+            color: #dc3545;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="app-shell">
+
+    {% include "_sidebar.html" ignore missing %}
+
+    <main class="main-content">
+
+        <div class="container-fluid py-4">
+
+            <!-- Page Header -->
+            <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+
+                <div>
+                    <div class="text-uppercase small fw-bold text-secondary mb-1">
+                        Customer Management
+                    </div>
+
+                    <h1 class="fw-bold mb-1">
+                        Add Guest
+                    </h1>
+
+                    <p class="text-muted mb-0">
+                        Create a new guest account for the hotel system.
+                    </p>
+                </div>
+
+                <a
+                    href="/guests"
+                    class="btn btn-outline-secondary"
+                >
+                    <i class="bi bi-arrow-left me-1"></i>
+                    Back to Guests
+                </a>
+
+            </div>
+
+
+            <!-- Form -->
+            <div class="guest-form-wrapper">
+
+                <div class="guest-form-card">
+
+                    <div class="guest-form-header">
+
+                        <div class="icon-box">
+                            <i class="bi bi-person-plus"></i>
+                        </div>
+
+                        <h2 class="fw-bold mb-2">
+                            Create Guest Account
+                        </h2>
+
+                        <p class="mb-0 text-white-50">
+                            Enter the guest's basic account information below.
+                        </p>
+
+                    </div>
+
+
+                    <div class="guest-form-body">
+
+                        <form method="POST">
+
+                            <div class="row g-4">
+
+                                <!-- Name -->
+                                <div class="col-md-6">
+
+                                    <label
+                                        for="name"
+                                        class="form-label"
+                                    >
+                                        Full Name
+                                        <span class="required-star">*</span>
+                                    </label>
+
+                                    <input
+                                        type="text"
+                                        class="form-control"
+                                        id="name"
+                                        name="name"
+                                        placeholder="Enter guest name"
+                                        required
+                                    >
+
+                                </div>
+
+
+                                <!-- Email -->
+                                <div class="col-md-6">
+
+                                    <label
+                                        for="email"
+                                        class="form-label"
+                                    >
+                                        Email Address
+                                        <span class="required-star">*</span>
+                                    </label>
+
+                                    <input
+                                        type="email"
+                                        class="form-control"
+                                        id="email"
+                                        name="email"
+                                        placeholder="guest@example.com"
+                                        required
+                                    >
+
+                                </div>
+
+
+                                <!-- Password -->
+                                <div class="col-md-6">
+
+                                    <label
+                                        for="password"
+                                        class="form-label"
+                                    >
+                                        Initial Password
+                                        <span class="required-star">*</span>
+                                    </label>
+
+                                    <input
+                                        type="password"
+                                        class="form-control"
+                                        id="password"
+                                        name="password"
+                                        placeholder="Create temporary password"
+                                        minlength="6"
+                                        required
+                                    >
+
+                                    <div class="password-note">
+                                        The guest can use this password to access their account.
+                                    </div>
+
+                                </div>
+
+
+                                <!-- Role -->
+                                <div class="col-md-6">
+
+                                    <label class="form-label">
+                                        Account Role
+                                    </label>
+
+                                    <input
+                                        type="text"
+                                        class="form-control"
+                                        value="Customer"
+                                        readonly
+                                    >
+
+                                    <div class="password-note">
+                                        New guests are automatically registered as customers.
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+
+                            <!-- Actions -->
+                            <div class="d-flex flex-wrap justify-content-end gap-2 mt-5">
+
+                                <a
+                                    href="/guests"
+                                    class="btn btn-outline-secondary px-4"
+                                >
+                                    Cancel
+                                </a>
+
+                                <button
+                                    type="submit"
+                                    class="btn btn-primary px-4"
+                                >
+                                    <i class="bi bi-person-plus me-1"></i>
+                                    Add Guest
+                                </button>
+
+                            </div>
+
+                        </form>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </main>
+
+</div>
+
+
+<script
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js">
+</script>
+
+</body>
+</html>

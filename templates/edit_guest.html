@@ -1,0 +1,510 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Edit Guest - HotelSuite</title>
+
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
+
+    <link
+        rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/premium.css') }}"
+    >
+
+    <style>
+        .edit-hero {
+            background:
+                linear-gradient(
+                    135deg,
+                    rgba(11, 17, 32, 0.98),
+                    rgba(25, 36, 62, 0.96)
+                );
+            border-radius: 24px;
+            padding: 34px;
+            color: #fff;
+            margin-bottom: 24px;
+            box-shadow: 0 18px 45px rgba(15, 23, 42, 0.18);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .edit-hero::after {
+            content: "";
+            position: absolute;
+            width: 220px;
+            height: 220px;
+            border-radius: 50%;
+            background: rgba(201, 162, 39, 0.10);
+            right: -70px;
+            top: -80px;
+        }
+
+        .edit-hero-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .guest-avatar-large {
+            width: 76px;
+            height: 76px;
+            border-radius: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(
+                135deg,
+                #c9a227,
+                #e7cf73
+            );
+            color: #0b1120;
+            font-size: 30px;
+            font-weight: 800;
+            box-shadow: 0 12px 28px rgba(201, 162, 39, 0.28);
+        }
+
+        .edit-card {
+            background: #fff;
+            border-radius: 22px;
+            padding: 30px;
+            box-shadow: 0 12px 35px rgba(15, 23, 42, 0.08);
+            border: 1px solid rgba(15, 23, 42, 0.06);
+        }
+
+        .form-label {
+            font-weight: 700;
+            color: #263247;
+            margin-bottom: 8px;
+        }
+
+        .form-control {
+            min-height: 48px;
+            border-radius: 12px;
+            border: 1px solid #dce2ea;
+            padding: 10px 14px;
+        }
+
+        .form-control:focus {
+            border-color: #c9a227;
+            box-shadow: 0 0 0 0.2rem rgba(201, 162, 39, 0.12);
+        }
+
+        .input-group-text {
+            border-radius: 12px 0 0 12px;
+            background: #f7f8fb;
+            border-color: #dce2ea;
+            color: #6b7280;
+        }
+
+        .input-group .form-control {
+            border-radius: 0 12px 12px 0;
+        }
+
+        .password-note {
+            font-size: 13px;
+            color: #7b8494;
+            margin-top: 7px;
+        }
+
+        .guest-summary {
+            background: #f7f8fb;
+            border-radius: 18px;
+            padding: 20px;
+            border: 1px solid #e8ebf0;
+        }
+
+        .summary-label {
+            font-size: 12px;
+            font-weight: 700;
+            color: #8a93a3;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        .summary-value {
+            font-size: 16px;
+            font-weight: 700;
+            color: #1d2738;
+            margin-top: 4px;
+        }
+
+        .btn-premium {
+            min-height: 48px;
+            border-radius: 12px;
+            padding: 10px 22px;
+            font-weight: 700;
+        }
+
+        .btn-gold {
+            background: linear-gradient(
+                135deg,
+                #c9a227,
+                #e7cf73
+            );
+            border: none;
+            color: #0b1120;
+        }
+
+        .btn-gold:hover {
+            color: #0b1120;
+            transform: translateY(-1px);
+            box-shadow: 0 8px 20px rgba(201, 162, 39, 0.24);
+        }
+
+        .btn-soft {
+            background: #f1f3f7;
+            border: 1px solid #e0e4ea;
+            color: #354052;
+        }
+
+        .btn-soft:hover {
+            background: #e7eaf0;
+            color: #1d2738;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 800;
+            color: #1d2738;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .edit-hero {
+                padding: 24px;
+            }
+
+            .edit-card {
+                padding: 22px;
+            }
+
+            .guest-avatar-large {
+                width: 62px;
+                height: 62px;
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container-fluid">
+
+    <div class="row">
+
+        {% include "_sidebar.html" ignore missing %}
+
+        <main class="col-lg-10 ms-auto px-4 py-4">
+
+            <!-- HERO -->
+            <div class="edit-hero">
+
+                <div class="edit-hero-content">
+
+                    <div class="d-flex flex-wrap align-items-center gap-4">
+
+                        <div class="guest-avatar-large">
+                            {{ guest.name[:1]|upper }}
+                        </div>
+
+                        <div>
+                            <div class="text-uppercase small fw-bold mb-1"
+                                 style="color:#e7cf73; letter-spacing:.12em;">
+                                Guest Management
+                            </div>
+
+                            <h1 class="fw-bold mb-1">
+                                Edit Guest
+                            </h1>
+
+                            <p class="mb-0 text-white-50">
+                                Update guest account and contact information.
+                            </p>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="row g-4">
+
+                <!-- FORM -->
+                <div class="col-lg-8">
+
+                    <div class="edit-card">
+
+                        <div class="section-title">
+                            <i class="bi bi-person-gear me-2"></i>
+                            Guest Information
+                        </div>
+
+                        <form
+                            method="POST"
+                            action="{{ url_for('main.edit_guest', guest_id=guest.id) }}"
+                        >
+
+                            <div class="row g-4">
+
+                                <!-- NAME -->
+                                <div class="col-md-6">
+
+                                    <label
+                                        for="name"
+                                        class="form-label"
+                                    >
+                                        Full Name
+                                    </label>
+
+                                    <div class="input-group">
+
+                                        <span class="input-group-text">
+                                            <i class="bi bi-person"></i>
+                                        </span>
+
+                                        <input
+                                            type="text"
+                                            class="form-control"
+                                            id="name"
+                                            name="name"
+                                            value="{{ guest.name }}"
+                                            placeholder="Enter guest name"
+                                            required
+                                        >
+
+                                    </div>
+
+                                </div>
+
+
+                                <!-- EMAIL -->
+                                <div class="col-md-6">
+
+                                    <label
+                                        for="email"
+                                        class="form-label"
+                                    >
+                                        Email Address
+                                    </label>
+
+                                    <div class="input-group">
+
+                                        <span class="input-group-text">
+                                            <i class="bi bi-envelope"></i>
+                                        </span>
+
+                                        <input
+                                            type="email"
+                                            class="form-control"
+                                            id="email"
+                                            name="email"
+                                            value="{{ guest.email }}"
+                                            placeholder="guest@example.com"
+                                            required
+                                        >
+
+                                    </div>
+
+                                </div>
+
+
+                                <!-- PASSWORD -->
+                                <div class="col-12">
+
+                                    <label
+                                        for="password"
+                                        class="form-label"
+                                    >
+                                        New Password
+                                        <span class="text-muted fw-normal">
+                                            (Optional)
+                                        </span>
+                                    </label>
+
+                                    <div class="input-group">
+
+                                        <span class="input-group-text">
+                                            <i class="bi bi-lock"></i>
+                                        </span>
+
+                                        <input
+                                            type="password"
+                                            class="form-control"
+                                            id="password"
+                                            name="password"
+                                            placeholder="Leave blank to keep current password"
+                                            minlength="6"
+                                        >
+
+                                    </div>
+
+                                    <div class="password-note">
+                                        <i class="bi bi-info-circle me-1"></i>
+                                        Leave this field empty if you do not want to change the password.
+                                    </div>
+
+                                </div>
+
+
+                                <!-- BUTTONS -->
+                                <div class="col-12">
+
+                                    <div class="d-flex flex-wrap gap-2 pt-2">
+
+                                        <button
+                                            type="submit"
+                                            class="btn btn-premium btn-gold"
+                                        >
+                                            <i class="bi bi-check2-circle me-2"></i>
+                                            Save Changes
+                                        </button>
+
+                                        <a
+                                            href="{{ url_for('main.guest_profile', guest_id=guest.id) }}"
+                                            class="btn btn-premium btn-soft"
+                                        >
+                                            <i class="bi bi-x-circle me-2"></i>
+                                            Cancel
+                                        </a>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        </form>
+
+                    </div>
+
+                </div>
+
+
+                <!-- GUEST SUMMARY -->
+                <div class="col-lg-4">
+
+                    <div class="edit-card">
+
+                        <div class="section-title">
+                            <i class="bi bi-person-vcard me-2"></i>
+                            Guest Summary
+                        </div>
+
+                        <div class="guest-summary">
+
+                            <div class="mb-4">
+
+                                <div class="summary-label">
+                                    Guest
+                                </div>
+
+                                <div class="summary-value">
+                                    {{ guest.name }}
+                                </div>
+
+                            </div>
+
+
+                            <div class="mb-4">
+
+                                <div class="summary-label">
+                                    Guest ID
+                                </div>
+
+                                <div class="summary-value">
+                                    #{{ guest.id }}
+                                </div>
+
+                            </div>
+
+
+                            <div class="mb-4">
+
+                                <div class="summary-label">
+                                    Current Email
+                                </div>
+
+                                <div class="summary-value text-break">
+                                    {{ guest.email }}
+                                </div>
+
+                            </div>
+
+
+                            <div class="mb-4">
+
+                                <div class="summary-label">
+                                    Account Role
+                                </div>
+
+                                <div class="summary-value">
+                                    <span class="badge rounded-pill bg-primary-subtle text-primary px-3 py-2">
+                                        Customer
+                                    </span>
+                                </div>
+
+                            </div>
+
+
+                            <div>
+
+                                <div class="summary-label">
+                                    Booking History
+                                </div>
+
+                                <div class="summary-value">
+                                    {{ guest.bookings|length }}
+                                    booking{% if guest.bookings|length != 1 %}s{% endif %}
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- BACK TO GUESTS -->
+            <div class="mt-4">
+
+                <a
+                    href="{{ url_for('main.bookings') }}"
+                    class="btn btn-outline-secondary rounded-pill px-4"
+                >
+                    <i class="bi bi-arrow-left me-2"></i>
+                    Back to Guests
+                </a>
+
+            </div>
+
+        </main>
+
+    </div>
+
+</div>
+
+<script
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js">
+</script>
+
+</body>
+</html>
+
